@@ -50,26 +50,23 @@ def best_split(X,y):
     # find all possible splits
     x_sort = np.array(np.sort(np.unique(X)))
     possible_splits = (x_sort[0:len(x_sort)-1] + x_sort[1:]) /2
-    
-    # find the best splits
-    #init
-    best_split = np.inf
-    best_trash =-1
-    left_n = None
-    right_n = None
+    best_parms = {'b_split': np.inf, 'b_trashold': None}
     step_ =1/length_node
+
     
     # itterating throught all of the possible trashholds to find the best split
     for idx_tr, curr_trash in enumerate(possible_splits):
         group_l = y[X<= curr_trash]
         group_r = y[X> curr_trash]
         
+        # find gini
         ent_l = (len(group_l)*step_)*(gimi_indx(group_l))
         ent_r = (len(group_r)*step_)* gimi_indx(group_r)
         result_ent = ent_l+ ent_r
-        if(result_ent <best_split ):
-            best_split =result_ent ; best_trash = curr_trash
-    return(best_split,best_trash)
+        
+        if(result_ent <best_parms['b_split'] ): # updating the best parms if needed
+            best_parms['b_split'] =result_ent ; best_parms['b_trashold'] = curr_trash
+    return(best_parms['b_split'],best_parms['b_trashold'])
 
 
 #function that return the most common value in the array ==> Would be valueable for the predict function ==> Where we need to determine based on the amount of visibale outcomes our prediction
