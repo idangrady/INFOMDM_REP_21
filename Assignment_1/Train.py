@@ -33,22 +33,6 @@ def check_if_possible(X,feature,nmin):
     else: True
     
     
-    
-# =============================================================================
-#     # Checking wherever I can split the 
-##    parent_data= parent_data[np.argsort(parent_data[:, feature])]
-
-#     left_node_x = parent_data[:feature,:]
-#     right_node_x =parent_data[feature +1:,:]
-#     
-#     if (left_node_x.shape[1] <= nfeat
-#         or right_node_x.shape[1] <= nfeat):
-#         return None
-# 
-# =============================================================================
-    
-    
-
 
 def tree_grow(x, y, nmin, minleaf,nfeat):
     parent_data =x.data
