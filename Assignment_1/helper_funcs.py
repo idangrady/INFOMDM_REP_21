@@ -61,9 +61,7 @@ def best_split(X,y,nmin, minleaf,nfeat):
         
         # checking the constraint. If 
         if (len(group_l) <minleaf 
-            or len(group_r)< minleaf
-            or group_l.shape[1]<nfeat
-            or group_r[1]<nfeat):
+            or len(group_r)< minleaf):
             pass
         
             
