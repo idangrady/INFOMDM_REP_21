@@ -50,6 +50,9 @@ def tree_grow( x, y, nmin, minleaf,nfeat):
     if left_node_x.shape[0] ==2:
         print("hear")
 
+    
+
+
     # check if we need to flip the +1 
     left_node = Node(data=right_node_x, feature =None, threhold=best_parms['b_trashold'])
     right_node = Node(data=right_node_x, feature =None, threhold=best_parms['b_trashold'])
