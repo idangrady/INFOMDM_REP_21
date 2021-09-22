@@ -64,7 +64,6 @@ def best_split(X,y,nmin, minleaf,nfeat):
             or len(group_r)< minleaf):
             pass
         
-            
         # find gini
         ent_l = (len(group_l)*step_)*(gimi_indx(group_l))
         ent_r = (len(group_r)*step_)* gimi_indx(group_r)
@@ -80,3 +79,11 @@ def get_majority_in_class(y):
     counter = Counter(y)
     most_comm_label,freq_most_common = counter.most_common()[0] # ger the most commot attribute in array plus amount of apperence
     return (most_comm_label,freq_most_common)
+
+def check_if_possible(X,feature,nmin):
+    parent_data = X.data
+    row_d, feat_n = parent_data.shape
+    # Checking if we dont violate 
+    if(nmin<row_d):
+        return None
+    else: True

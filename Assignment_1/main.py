@@ -1,11 +1,11 @@
 import numpy as np
-from  helper_funcs import gimi_indx, information_gain, _split, best_split, get_majority_in_class
+from  helper_funcs import gimi_indx, information_gain, _split, best_split, get_majority_in_class, check_if_possible
 
 class Node:
     #initiate a class of node with the necessary parms
     #init
     def __init__(self,data = None,feature = None, threhold = None, left = None, right= None,value = None): # Only leaf would have a value!!
-        self.data = data
+        self.data = data # including the y
         self.feature = feature
         self.threhold =threhold
         self.left = left
@@ -24,11 +24,41 @@ def tree_grow( x, y, nmin, minleaf,nfeat):
     nfeat : Number of features to consider on every split
     """
     # initiate as parms ==> get the best from every node
-    best_parms = {'feature': None, 'val': None, 'gini_indx':np.inf}
-    d,n = x.shape
+    parent_data =x.data
+    d,n = parent_data.shape
+    best_parms = {'feature': None,'b_split': np.inf, 'b_trashold': None}
     
-
-    pass
+    if check_if_possible(x,y,nmin):
+        for col_feat in range(n-2):        
+                best_splt_x_1, best_trash_x_1 = best_split(parent_data[:,col_feat], y,2,2,4)
+                if (check_if_possible(x,y,best_splt_x_1,col_feat,nmin,nfeat)):     
+                    best_parms['feature'] = col_feat
+                    best_parms['b_split'] = best_splt_x_1
+                    best_parms['b_trashold'] = best_trash_x_1
+                    
+    if (best_parms['b_trashold'] == None):
+        most_comm_label,freq_most_common = get_majority_in_class(y)
+        x.value = most_comm_label
+        return x
+    parent_data = parent_data= parent_data[np.argsort(parent_data[:, best_parms['feature']])]       # we sort the data check the y
+    left_node_x = parent_data[:best_parms['feature'],:]
+    right_node_x =parent_data[:best_parms['feature']+1,:]
+    
+    # check if we need to flip the +1 
+    left_node = Node(data=right_node_x, feature =None, threhold=best_parms['b_trashold'])
+    right_node = Node(data=right_node_x, feature =None, threhold=best_parms['b_trashold'])
+    
+    
+    #Creating both children nodes and assign to them current value ==> needed to be deleted in case of splitting in the future. 
+    left_node = Node(data =left_node_x ,feature = best_parms['feature'],threhold = best_parms['b_trashold'])
+    right_node = Node(data =right_node_x ,feature = best_parms['feature'],threhold = best_parms['b_trashold'])
+    
+    x.left = left_node
+    x.right = right_node
+    
+    # index at the top
+    tree_grow(left_node,left_node.data[:,-1],nmin,minleaf,nfeat)
+    tree_grow(right_node,right_node.data[:,-1],nmin,minleaf,nfeat)
 
     # Check that the current node is following the constraints. 
 
