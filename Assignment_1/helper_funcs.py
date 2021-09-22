@@ -42,7 +42,7 @@ def _split(x_colm, split_trash):
     return(left_indx, right_indx)
 
 #function that returns the best split in a current option 
-def best_split(X,y):
+def best_split(X,y,nmin, minleaf,nfeat):
     """
     we assume that all the data is numeric
     """
@@ -59,6 +59,14 @@ def best_split(X,y):
         group_l = y[X<= curr_trash]
         group_r = y[X> curr_trash]
         
+        # checking the constraint. If 
+        if (len(group_l) <minleaf 
+            or len(group_r)< minleaf
+            or group_l.shape[1]<nfeat
+            or group_r[1]<nfeat):
+            pass
+        
+            
         # find gini
         ent_l = (len(group_l)*step_)*(gimi_indx(group_l))
         ent_r = (len(group_r)*step_)* gimi_indx(group_r)
