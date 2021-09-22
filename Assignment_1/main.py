@@ -28,21 +28,24 @@ def tree_grow( x, y, nmin, minleaf,nfeat):
     d,n = parent_data.shape
     best_parms = {'feature': None,'b_split': np.inf, 'b_trashold': None}
     
-    if check_if_possible(x,y,nmin):
+    if (check_if_possible(x,nmin)==True):
         for col_feat in range(n-2):        
-                best_splt_x_1, best_trash_x_1 = best_split(parent_data[:,col_feat], y,2,2,4)
-                if (check_if_possible(x,y,best_splt_x_1,col_feat,nmin,nfeat)):     
-                    best_parms['feature'] = col_feat
-                    best_parms['b_split'] = best_splt_x_1
-                    best_parms['b_trashold'] = best_trash_x_1
+            if col_feat ==2:
+                print("2")
+            best_splt_x_1, best_trash_x_1 = best_split(parent_data[:,col_feat], y,2,2,4)
+            if(best_splt_x_1 <best_parms['b_split'] ):
+                best_parms['feature'] = col_feat
+                best_parms['b_split'] = best_splt_x_1
+                best_parms['b_trashold'] = best_trash_x_1
                     
-    if (best_parms['b_trashold'] == None):
-        most_comm_label,freq_most_common = get_majority_in_class(y)
+    if (best_parms['b_split'] == np.inf):
+        most_comm_label,freq_most_common = get_majority_in_class(x.data[:,-1])
         x.value = most_comm_label
         return x
+   
     parent_data = parent_data= parent_data[np.argsort(parent_data[:, best_parms['feature']])]       # we sort the data check the y
     left_node_x = parent_data[:best_parms['feature'],:]
-    right_node_x =parent_data[:best_parms['feature']+1,:]
+    right_node_x =parent_data[best_parms['feature']:,:]
     
     # check if we need to flip the +1 
     left_node = Node(data=right_node_x, feature =None, threhold=best_parms['b_trashold'])
@@ -77,5 +80,10 @@ def create_node(cur_node,split_feat,trashhold):
     
     
 credit_data= get_data()
-print(best_split(credit_data[:,3], credit_data[:,5]))
+
+
+data_ =Node(data = credit_data)
+tree=tree_grow(data_,data_.data[:,-1],3,3,2)
+
+#print(best_split(credit_data[:,3], credit_data[:,5]))
 

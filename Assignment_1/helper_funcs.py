@@ -60,17 +60,17 @@ def best_split(X,y,nmin, minleaf,nfeat):
         group_r = y[X> curr_trash]
         
         # checking the constraint. If 
-        if (len(group_l) <minleaf 
+        if (len(group_l) < minleaf 
             or len(group_r)< minleaf):
             pass
-        
-        # find gini
-        ent_l = (len(group_l)*step_)*(gimi_indx(group_l))
-        ent_r = (len(group_r)*step_)* gimi_indx(group_r)
-        result_ent = ent_l+ ent_r
-        
-        if(result_ent <best_parms['b_split'] ): # updating the best parms if needed
-            best_parms['b_split'] =result_ent ; best_parms['b_trashold'] = curr_trash
+        else:
+            # find gini
+            ent_l = (len(group_l)*step_)*(gimi_indx(group_l))
+            ent_r = (len(group_r)*step_)* gimi_indx(group_r)
+            result_ent = ent_l+ ent_r
+            
+            if(result_ent <best_parms['b_split'] ): # updating the best parms if needed
+                best_parms['b_split'] =result_ent ; best_parms['b_trashold'] = curr_trash
     return(best_parms['b_split'],best_parms['b_trashold'])
 
 
@@ -80,10 +80,10 @@ def get_majority_in_class(y):
     most_comm_label,freq_most_common = counter.most_common()[0] # ger the most commot attribute in array plus amount of apperence
     return (most_comm_label,freq_most_common)
 
-def check_if_possible(X,feature,nmin):
+def check_if_possible(X,nmin):
     parent_data = X.data
     row_d, feat_n = parent_data.shape
     # Checking if we dont violate 
-    if(nmin<row_d):
-        return None
-    else: True
+    if(row_d< nmin):
+        return False
+    else: return (True)

@@ -8,7 +8,6 @@ class Node:
     #init
     def __init__(self,data= None, feature = None, threhold = None, left = None, right= None,value = None): # Only leaf would have a value!!
         self.data = data
-
         self.feature = feature
         self.threhold =threhold
         self.left = left
