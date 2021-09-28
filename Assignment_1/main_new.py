@@ -235,39 +235,62 @@ def tree_pred_b_entry(x_entry, tr_list):
     most_frequent_prediction, _ = predictions.most_common()[0]
     return most_frequent_prediction
     
+def confo_matrix(y,predicted):
+    #Compute accuracy
+    total_ans = len(y)+1
+    accuracy = np.sum(y==predicted) /total_ans
+    
+    cross_va = np.zeros((2,2))
+    # cross validation 
+    cross_va[1][0] = np.sum(y>predicted)
+    cross_va[0][1] = np.sum(y<predicted)
+    cross_va[1][1] = np.sum(y+predicted >1)
+    cross_va[0][0] = np.sum(y+predicted ==0)
+    return(accuracy,cross_va)
 
 # Read data from file
 def get_data():
     #return np.genfromtxt(r'/Users/Marc/Documents/UU/Master - Computing Science/2021-2022/INFOMDM_REP_21/INFOMDM_REP_21/Assignment_1/credit.txt', delimiter = ',', skip_header = True)
     return np.genfromtxt(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\credit.txt', delimiter = ',', skip_header = True)
 
+def get_pima_data():
+        #return np.genfromtxt(r'/Users/Marc/Documents/UU/Master - Computing Science/2021-2022/INFOMDM_REP_21/INFOMDM_REP_21/Assignment_1/credit.txt', delimiter = ',', skip_header = True)
+    return np.genfromtxt(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\pima.txt', delimiter = ',', skip_header = True)
+
 
 # Main function
 def main():
 
     # Get data from file
-    credit_data = get_data()
+    credit_data = get_pima_data()
+    print(f"Total Sampples: {len(credit_data) +1}")
 
     # Split data and class labels
     x = credit_data[:, : - 1]
     y = credit_data[:, -1]
 
     # Grow classification tree
-    classification_tree = tree_grow(x, y, 3, 3, 4)
+    classification_tree = tree_grow(x, y, 20, 5, None)
 
-    classification_tree = tree_grow(x, y, None, None, None) # <- No constraints
-    classification_tree = tree_grow(x, y, 2, 1, None)       # <- Practically the same
+ #   classification_tree = tree_grow(x, y, None, None, None) # <- No constraints
+ #   classification_tree = tree_grow(x, y, 2, 1, None)       # <- Practically the same
 
 
-    print_tree(classification_tree)
+    #print_tree(classification_tree)
 
     # Compare labels with predictions
-    print(y)
-    print(tree_pred(x, classification_tree))
+#    print(y)
+    predict_d = tree_pred(x, classification_tree)
+    accuracy,confusion_mat = confo_matrix(y,predict_d)
+    print(f"accuracy: {accuracy}")
+    print(f"confusion matrix:")
+    print(f"{confusion_mat}")
 
     # Try _b functions
-    classification_tree_list = tree_grow_b(x, y, 3, 3, 4, 10)
-    print(tree_pred_b(x, classification_tree_list))
+# =============================================================================
+#     classification_tree_list = tree_grow_b(x, y, 3, 3, 4, 10)
+#     print(tree_pred_b(x, classification_tree_list))
+# =============================================================================
 
 
 # Temp print tree function
