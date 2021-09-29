@@ -23,6 +23,16 @@ class Classification_Tree:
         # Only a leaf node contains a class label prediction
         self.class_label = class_label
 
+def get_train_data(set_,columns):
+    if (set_ =='train' ):
+        df = pd.read_csv(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\eclipse-metrics-packages-2.0.csv', delimiter = ';')
+        df_ = np.array(df[columns])
+        y = df['post']
+    else:
+        df =pd.read_csv(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\eclipse-metrics-packages-3.0.csv', delimiter = ';')
+        df_ = np.array(df[columns])
+        y = df['post']
+    return (df_,y)
 
 # Function that grows the classification tree
 def tree_grow(x, y, nmin, minleaf, nfeat):
@@ -144,8 +154,29 @@ def tree_grow_b(x, y, nmin, minleaf, nfeat, m):
 # Use a list of classification trees to predict the class labels for matrix data (with majority voting)
 def tree_pred_b(x, tr_list):
 
-    # Return the class label prediction for each matrix entry
-    return [tree_pred_b_entry(entry, tr_list) for entry in x]
+# =============================================================================
+#     predict_ = np.array(tree_pred(x,tr_list[0]))
+#     for i in range(1,len(tr_list)):
+# 
+#         predict_ + np.array(tree_pred(x,tr_list[i]))
+#         
+#     predict_ = predict_/len(tr_list)
+#     predict_ = np.where(predict_>=0.5,1,0)
+#     predict_ =0
+# =============================================================================
+    predict_ = 0
+    for entry in tr_list:
+        
+        predict_ +=   np.array([float(i) for i in tree_pred(x,entry)])
+        
+    
+    predict_ = predict_/len(tr_list)
+    predict_ = np.where(predict_>=0.5,1,0)
+    return(predict_)
+
+# Return the class label prediction for each matrix entry
+  #  return [tree_pred_b_entry(entry, tr_list) for entry in x]
+
 
 
 # Function that returns the best split for a feature
@@ -227,10 +258,9 @@ def tree_pred_entry(x_entry, tr):
     else:
         return tree_pred_entry(x_entry, tr.right_tree)
 
-
-
 # Use classification tree to predict class labels for a single data entry
 def tree_pred_b_entry(x_entry, tree_list):
+
     # Make a prediction for every classification tree
     predictions_list = [tree_pred_entry(x_entry, tree) for tree in tree_list]
     
@@ -238,10 +268,8 @@ def tree_pred_b_entry(x_entry, tree_list):
     predictions = Counter(predictions_list)
     most_frequent_prediction, _ = predictions.most_common()[0]
     return most_frequent_prediction
-    
-# Use classification tree to predict class labels for a single data entry
-
-def confo_matrix(y,predicted,set):
+        
+def confo_matrix(y,predicted,set_):
     #Compute accuracy
     total_ans = len(y)+1
     accuracy = np.sum(y==predicted) /total_ans
@@ -252,14 +280,15 @@ def confo_matrix(y,predicted,set):
     cross_va[0][1] = np.sum(y<predicted)
     cross_va[1][1] = np.sum(y+predicted >1)
     cross_va[0][0] = np.sum(y+predicted ==0)
-    print(f"accuracy single tree on {set} data: ")
+    print(f"accuracy single tree on {set_} data: ")
     print(accuracy)
-    print(f"matrix single tree on {set} data: ")
+    print(f"matrix single tree on {set_} data: ")
     print(cross_va)
     print("------------------------------------------------------")
-    print(f"Precision for {set} : {cross_va[1][1] /(cross_va[1][1] +cross_va[0][1]) }")
-    print(f"Recall for {set} : {cross_va[1][1] /(cross_va[1][1] +cross_va[1][0]) }")
+#    print(f"Precision for {set_} : {cross_va[1][1] /(cross_va[1][1] +cross_va[0][1]) }")
+#    print(f"Recall for {set_} : {cross_va[1][1] /(cross_va[1][1] +cross_va[1][0]) }")
     print("------------------------------------------------------")
+
 
 # Read data from file
 def get_data():
@@ -270,24 +299,12 @@ def get_pima_data():
         #return np.genfromtxt(r'/Users/Marc/Documents/UU/Master - Computing Science/2021-2022/INFOMDM_REP_21/INFOMDM_REP_21/Assignment_1/credit.txt', delimiter = ',', skip_header = True)
     return np.genfromtxt(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\pima.txt', delimiter = ',', skip_header = True)
 
-def get_train_data(set_,columns):
-    if (set_ =='train' ):
-        df = pd.read_csv(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\eclipse-metrics-packages-2.0.csv', delimiter = ';')
-        df_ = np.array(df[columns])
-        y = df['post']
-    else:
-        df =pd.read_csv(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\eclipse-metrics-packages-3.0.csv', delimiter = ';')
-        df_ = np.array(df[columns])
-        y = df['post']
-    return (df_,y)
-
-
 
 # Main function
 def main():
 
-    # Get data from file
 # =============================================================================
+#     # Get data from file
 #     credit_data = get_pima_data()
 #     print(f"Total Sampples: {len(credit_data) +1}")
 # 
@@ -311,58 +328,59 @@ def main():
 #     print(f"accuracy: {accuracy}")
 #     print(f"confusion matrix:")
 #     print(f"{confusion_mat}")
+#     
+
 # =============================================================================
-    
-    
     columns = ['pre', 'ACD_avg','ACD_max','ACD_sum','FOUT_avg','FOUT_max','FOUT_sum','MLOC_avg','MLOC_max',
-                   'MLOC_sum','NBD_avg','NBD_max','NBD_sum','NOF_avg','NOF_max','NOF_sum',
-                   'NOI_avg','NOI_max','NOI_sum','NOM_avg','NOM_max','NOM_sum','NOT_avg',
-                   'NOT_max','NOT_sum','NSF_avg','NSF_max','NSF_sum','NSM_avg',
-                   'NSM_max','NSM_sum','PAR_avg','PAR_max','PAR_sum','TLOC_avg',
-                   'TLOC_max','TLOC_sum','VG_avg','VG_max','VG_sum', 'NOCU']
-    
+               'MLOC_sum','NBD_avg','NBD_max','NBD_sum','NOF_avg','NOF_max','NOF_sum',
+               'NOI_avg','NOI_max','NOI_sum','NOM_avg','NOM_max','NOM_sum','NOT_avg',
+               'NOT_max','NOT_sum','NSF_avg','NSF_max','NSF_sum','NSM_avg',
+               'NSM_max','NSM_sum','PAR_avg','PAR_max','PAR_sum','TLOC_avg',
+               'TLOC_max','TLOC_sum','VG_avg','VG_max','VG_sum', 'NOCU']
+
     
     x,y = get_train_data('train',columns)
     X_test,Y_test =get_train_data('test',columns) 
     y = np.where(y>=1,1,0)
     Y_test = np.where(Y_test>=1,1,0)
-# =============================================================================
-#     #answer 1
-#          # Grow classification tree on train data 
-#     classification_tree = tree_grow(x, y, 15, 5, None)
-#     predict_train = tree_pred(x, classification_tree)
-#     #print(predict_d)
-#     confo_matrix(y,predict_train,'train')
-# 
-#     #get test data
-#     predict_test= tree_pred(X_test,classification_tree)
-#     confo_matrix(Y_test,predict_test,'test')
-#     
-# =============================================================================
-# answer_2
 
-#Train
-    classification_tree_list = tree_grow_b(x, y, 15, 5, None,4)
-    predicted_train  = tree_pred_b(x,classification_tree_list)
-    print(predicted_train)
 # =============================================================================
-#     predict_train = tree_pred_b(X_test, classification_tree_list)
-#     confo_matrix(y,predict_train,'train')
+#     classification_tree_list = tree_grow_b(x, y, 15, 5, None,20)
+#     predicted_train  = tree_pred_b(x,classification_tree_list)
+#     #print(predicted_train)
+#   # confo_matrix(y,predicted_train,'train')
+#     print(confusion_matrix(y,predicted_train))
 # =============================================================================
-#Test
+    
 # =============================================================================
-#     predict_test= tree_pred_b(X_test,classification_tree_list)
-#     confo_matrix(Y_test,predict_test,'test')
+#     classification_tree = tree_grow(x, y, 15, 5,None)
+#     predicted_train  = tree_pred(X_test,classification_tree)
+#     print(confo_matrix(Y_test,predicted_train,'test_'))
 #     
 # =============================================================================
     
+    for i in range(3):
+        print(f" try: {i}")
+        classification_tree_list = tree_grow_b(x, y, 15, 5, None,100)
+        predict_ = tree_pred_b(X_test,classification_tree_list)
+        confo_matrix(Y_test,predict_,'test')
 
-    
-    # Try _b functions
-# =============================================================================
-#     classification_tree_list = tree_grow_b(x, y, 3, 3, 4, 10)
-#     print(tree_pred_b(x, classification_tree_list))
-# =============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Temp print tree function
@@ -376,7 +394,6 @@ def print_tree(tr, n = 0):
     print("\tcol_" + str(tr.feature) + " = " + str(tr.threshold))
     print_tree(tr.left_tree,  n + 1)
     print_tree(tr.right_tree, n + 1)
-    
 
 
 if __name__ == "__main__":
