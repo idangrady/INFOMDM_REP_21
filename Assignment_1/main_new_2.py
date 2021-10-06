@@ -36,13 +36,17 @@ def get_train_data(set_,columns):
 
 # Function that grows the classification tree
 def tree_grow(x, y, nmin, minleaf, nfeat):
-    """
-    x:       matrix with data
+    """ descripton
+    x (type):       matrix with data
     y:       vector with class labels
     nmin:    if a node contains fewer cases than nmin
     minleaf: a split that creates a node with fewer than minleaf observations is not acceptable
     nfeat:   Number of features to consider on every split
+    
+    retuurn: 
     """
+    
+    
     
     # Instantiate the tree and add the amount of rows for both class labels
     tree = Classification_Tree()
@@ -259,6 +263,10 @@ def tree_pred_entry(x_entry, tr):
         return tree_pred_entry(x_entry, tr.right_tree)
 
 # Use classification tree to predict class labels for a single data entry
+###
+##
+
+
 def tree_pred_b_entry(x_entry, tree_list):
 
     # Make a prediction for every classification tree
@@ -338,11 +346,16 @@ def main():
                'NSM_max','NSM_sum','PAR_avg','PAR_max','PAR_sum','TLOC_avg',
                'TLOC_max','TLOC_sum','VG_avg','VG_max','VG_sum', 'NOCU']
 
+    help(tree_grow)
+    
     
     x,y = get_train_data('train',columns)
     X_test,Y_test =get_train_data('test',columns) 
     y = np.where(y>=1,1,0)
     Y_test = np.where(Y_test>=1,1,0)
+    
+    
+  
 
 # =============================================================================
 #     classification_tree_list = tree_grow_b(x, y, 15, 5, None,20)
@@ -353,9 +366,9 @@ def main():
 # =============================================================================
     
 # =============================================================================
-#     classification_tree = tree_grow(x, y, 15, 5,None)
-#     predicted_train  = tree_pred(X_test,classification_tree)
-#     print(confo_matrix(Y_test,predicted_train,'test_'))
+    classification_tree = tree_grow(x, y, 15, 5,None)
+    predicted_train  = tree_pred(X_test,classification_tree)
+    print(confo_matrix(Y_test,predicted_train,'test_'))
 #     
 # =============================================================================
     
