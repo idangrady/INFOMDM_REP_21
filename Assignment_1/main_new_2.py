@@ -34,16 +34,19 @@ def get_train_data(set_,columns):
         y = df['post']
     return (df_,y)
 
-# Function that grows the classification tree
+ 
 def tree_grow(x, y, nmin, minleaf, nfeat):
-    """ descripton
-    x (type):       matrix with data
-    y:       vector with class labels
-    nmin:    if a node contains fewer cases than nmin
-    minleaf: a split that creates a node with fewer than minleaf observations is not acceptable
-    nfeat:   Number of features to consider on every split
+    """Function that grows the classification tree
     
-    retuurn: 
+    Params:
+        x (type):               Matrix with data
+        y (type):               Vector with class labels
+        nmin (type):            If a node contains fewer cases than nmin
+        minleaf (type):         A split that creates a node with fewer than minleaf observations is not acceptable
+        nfeat (type):           Number of features to consider on every split
+    
+    return: 
+        Something (type): description
     """
     
     
