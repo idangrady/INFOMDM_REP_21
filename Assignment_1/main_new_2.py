@@ -27,11 +27,11 @@ class Classification_Tree:
 
 def get_train_data(set_,columns):
     if (set_ =='train' ):
-        df = pd.read_csv(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\eclipse-metrics-packages-2.0.csv', delimiter = ';')
+        df = pd.read_csv(r'F:\Master kunstmatige intelligentie\INFOMDM\INFOMDM_REP_21\Assignment_1\eclipse-metrics-packages-2.0.csv', delimiter = ';')
         df_ = np.array(df[columns])
         y = df['post']
     else:
-        df =pd.read_csv(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\eclipse-metrics-packages-3.0.csv', delimiter = ';')
+        df =pd.read_csv(r'F:\Master kunstmatige intelligentie\INFOMDM\INFOMDM_REP_21\Assignment_1\eclipse-metrics-packages-3.0.csv', delimiter = ';')
         df_ = np.array(df[columns])
         y = df['post']
     return (df_,y)
@@ -308,12 +308,12 @@ def ncnemars_test(y,model_1,model_2):
     output_matrix = np.zeros((2,2)) #creating the output matrix
     
     #check when model are inacuurate and place it in the right loc in the matrix
-    output_matrix[1][0] = np.sum(np.where((y+model_1 >1) & (y+model_2 ==1),1,0))
-    output_matrix[0][1] = np.sum(np.where((y+model_2 >1) & (y+model_1 ==1),1,0))
+    output_matrix[1][0] = np.sum(np.where(((y+model_1 >1) | (y+model_1 == 0) ) & (y+model_2 ==1),1,0))  #model 1 TN or TP, modele 2 FN or FP
+    output_matrix[0][1] = np.sum(np.where(((y+model_2 >1) | (y+model_2 == 0) ) & (y+model_1 ==1),1,0))  #model 2 TN or TP, modele 1 FN or FP
     
     #check when model are are the same in both ==> their correct output and mistakes
-    output_matrix[0][0] = np.sum(np.where((y+model_2 ==1) & (y+model_1 ==1),1,0)) #currect
-    output_matrix[1][1] =np.sum(np.where(y+ model_1+model_2>2 ,1,0))  + (np.sum(np.where(y+ model_1+model_2==0 ,1,0))) #mistake
+    output_matrix[0][0] = np.sum(np.where((y+model_2 ==1) & (y+model_1 ==1),1,0)) #both models incorrect (FN or FP)
+    output_matrix[1][1] =np.sum(np.where(y+ model_1+model_2>2 ,1,0))  + (np.sum(np.where(y+ model_1+model_2==0 ,1,0))) #both models correct (TP or TN)
     
     #check if we can divide
     if (output_matrix[1][0] -output_matrix[0][1] != 0):
@@ -328,11 +328,11 @@ def ncnemars_test(y,model_1,model_2):
 # Read data from file
 def get_data():
     #return np.genfromtxt(r'/Users/Marc/Documents/UU/Master - Computing Science/2021-2022/INFOMDM_REP_21/INFOMDM_REP_21/Assignment_1/credit.txt', delimiter = ',', skip_header = True)
-    return np.genfromtxt(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\credit.txt', delimiter = ',', skip_header = True)
+    return np.genfromtxt(r'F:\Master kunstmatige intelligentie\INFOMDM\INFOMDM_REP_21\Assignment_1\credit.txt', delimiter = ',', skip_header = True)
 
 def get_pima_data():
         #return np.genfromtxt(r'/Users/Marc/Documents/UU/Master - Computing Science/2021-2022/INFOMDM_REP_21/INFOMDM_REP_21/Assignment_1/credit.txt', delimiter = ',', skip_header = True)
-    return np.genfromtxt(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\pima.txt', delimiter = ',', skip_header = True)
+    return np.genfromtxt(r'F:\Master kunstmatige intelligentie\INFOMDM\INFOMDM_REP_21\Assignment_1\pima.txt', delimiter = ',', skip_header = True)
 
 
 # Main function
@@ -398,38 +398,48 @@ def main():
     predicted_train  = tree_pred(X_test,classification_tree)
     print(confo_matrix(Y_test,predicted_train,'test_'))
 #     
-
-    model_2 = (np.array(predicted_train).reshape(1,len(predicted_train)))
-    model_2 = np.where(model_2<1,1,0)
+    
+    model_0 = (np.array(predicted_train).reshape(1,len(predicted_train)))
+    model_0 = np.where(model_0<1,1,0)
     
     
-    mean, var, skew, kurt = chi2.stats(predicted_train, moments='mvsk')
-
-    
-    ncnemars_test_matrix, p_value = ncnemars_test(Y_test,model_2,model_2)
-# =============================================================================
+    #mean, var, skew, kurt = chi2.stats(predicted_train, moments='mvsk')
+    #ncnemars_test_matrix_0, p_value_0 = ncnemars_test(Y_test,model_0,model_0)
     
 # =============================================================================
-#     print("bagging:")
-#     classification_tree_list = tree_grow_b(x, y, 15, 5, None,100)
-#     predict_ = tree_pred_b(X_test,classification_tree_list)
-#     confo_matrix(Y_test,predict_,'test')
+    
 # =============================================================================
+    print("bagging:")
+    classification_tree_list_bagging = tree_grow_b(x, y, 15, 5, None,100)
+    predict_bagging = tree_pred_b(X_test,classification_tree_list_bagging)
+    print(confo_matrix(Y_test,predict_bagging,'test'))
+    
+    model_1 = (np.array(predict_bagging).reshape(1, len(predict_bagging)))
+    model_1 = np.where(model_1<1,1,0)
+    
+#=============================================================================
     
 # =============================================================================
 #     ncnemars_test(y,predicted_train,predict_)
 # =============================================================================
 # =============================================================================
-#     print("Random forest:")
-#     classification_tree_list = tree_grow_b(x, y, 15, 5, 6,100)
-#     predict_ = tree_pred_b(X_test,classification_tree_list)
-#     confo_matrix(Y_test,predict_,'test')
+    print("Random forest:")
+    classification_tree_list_forest = tree_grow_b(x, y, 15, 5, 6,100)
+    predict_forest = tree_pred_b(X_test,classification_tree_list_forest)
+    print(confo_matrix(Y_test,predict_forest,'test'))
+    
+    model_2 = (np.array(predict_forest).reshape(1, len(predict_forest)))
+    model_2 = np.where(model_2<1,1,0)
+    
 # =============================================================================
 
 
-
-
-
+#==============================================================================
+#     mcnemars_test for bagging and random forest
+    
+    ncnemars_test_matrix_12, p_value_12 = ncnemars_test(Y_test, model_1, model_2)
+    print(ncnemars_test_matrix_12)
+    print(p_value_12)
 
 
 
