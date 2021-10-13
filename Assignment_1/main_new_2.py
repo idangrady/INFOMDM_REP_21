@@ -316,8 +316,8 @@ def ncnemars_test(y,model_1,model_2):
     output_matrix[0][0] =np.sum(np.where(y+ model_1+model_2>2 ,1,0))  + (np.sum(np.where(y+ model_1+model_2==0 ,1,0))) #both models correct (TP or TN)
     
     #check if we can divide
-    if (output_matrix[1][0] -output_matrix[0][1] != 0):
-        p_value = ((output_matrix[1][0]) - (output_matrix[0][1])-1)**2 / (output_matrix[1][0] -output_matrix[0][1])
+    if (output_matrix[1][0] - output_matrix[0][1] != 0):
+        p_value = ((abs(output_matrix[1][0]) - (output_matrix[0][1]))-1)**2 / (output_matrix[1][0] + output_matrix[0][1])
     # if not
     else:
         p_value  ="can not divided by 0"
