@@ -3,7 +3,9 @@ from collections import Counter
 import pandas as pd
 from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 import matplotlib.pyplot as plt
-
+from scipy.special import comb
+from scipy.stats import chi2, binom
+import matplotlib.pyplot as plt
 
 class Classification_Tree:
     
@@ -301,6 +303,28 @@ def confo_matrix(y,predicted,set_):
     print("------------------------------------------------------")
 
 
+def ncnemars_test(y,model_1,model_2):
+    
+    output_matrix = np.zeros((2,2)) #creating the output matrix
+    
+    #check when model are inacuurate and place it in the right loc in the matrix
+    output_matrix[1][0] = np.sum(np.where((y+model_1 >1) & (y+model_2 ==1),1,0))
+    output_matrix[0][1] = np.sum(np.where((y+model_2 >1) & (y+model_1 ==1),1,0))
+    
+    #check when model are are the same in both ==> their correct output and mistakes
+    output_matrix[0][0] = np.sum(np.where((y+model_2 ==1) & (y+model_1 ==1),1,0)) #currect
+    output_matrix[1][1] =np.sum(np.where(y+ model_1+model_2>2 ,1,0))  + (np.sum(np.where(y+ model_1+model_2==0 ,1,0))) #mistake
+    
+    #check if we can divide
+    if (output_matrix[1][0] -output_matrix[0][1] != 0):
+        p_value = ((output_matrix[1][0]) - (output_matrix[0][1])-1)**2 / (output_matrix[1][0] -output_matrix[0][1])
+    # if not
+    else:
+        p_value  ="can not divided by 0"
+        
+    return(output_matrix,p_value)
+    
+    
 # Read data from file
 def get_data():
     #return np.genfromtxt(r'/Users/Marc/Documents/UU/Master - Computing Science/2021-2022/INFOMDM_REP_21/INFOMDM_REP_21/Assignment_1/credit.txt', delimiter = ',', skip_header = True)
@@ -369,19 +393,38 @@ def main():
 # =============================================================================
     
 # =============================================================================
+    print("single Tree")    
     classification_tree = tree_grow(x, y, 15, 5,None)
     predicted_train  = tree_pred(X_test,classification_tree)
     print(confo_matrix(Y_test,predicted_train,'test_'))
 #     
+
+    model_2 = (np.array(predicted_train).reshape(1,len(predicted_train)))
+    model_2 = np.where(model_2<1,1,0)
+    
+    
+    mean, var, skew, kurt = chi2.stats(predicted_train, moments='mvsk')
+
+    
+    ncnemars_test_matrix, p_value = ncnemars_test(Y_test,model_2,model_2)
 # =============================================================================
     
-    for i in range(3):
-        print(f" try: {i}")
-        classification_tree_list = tree_grow_b(x, y, 15, 5, None,100)
-        predict_ = tree_pred_b(X_test,classification_tree_list)
-        confo_matrix(Y_test,predict_,'test')
-
-
+# =============================================================================
+#     print("bagging:")
+#     classification_tree_list = tree_grow_b(x, y, 15, 5, None,100)
+#     predict_ = tree_pred_b(X_test,classification_tree_list)
+#     confo_matrix(Y_test,predict_,'test')
+# =============================================================================
+    
+# =============================================================================
+#     ncnemars_test(y,predicted_train,predict_)
+# =============================================================================
+# =============================================================================
+#     print("Random forest:")
+#     classification_tree_list = tree_grow_b(x, y, 15, 5, 6,100)
+#     predict_ = tree_pred_b(X_test,classification_tree_list)
+#     confo_matrix(Y_test,predict_,'test')
+# =============================================================================
 
 
 
