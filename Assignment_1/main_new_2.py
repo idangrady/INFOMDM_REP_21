@@ -312,8 +312,8 @@ def ncnemars_test(y,model_1,model_2):
     output_matrix[0][1] = np.sum(np.where(((y+model_2 >1) | (y+model_2 == 0) ) & (y+model_1 ==1),1,0))  #model 2 TN or TP, modele 1 FN or FP
     
     #check when model are are the same in both ==> their correct output and mistakes
-    output_matrix[0][0] = np.sum(np.where((y+model_2 ==1) & (y+model_1 ==1),1,0)) #both models incorrect (FN or FP)
-    output_matrix[1][1] =np.sum(np.where(y+ model_1+model_2>2 ,1,0))  + (np.sum(np.where(y+ model_1+model_2==0 ,1,0))) #both models correct (TP or TN)
+    output_matrix[1][1] = np.sum(np.where((y+model_2 ==1) & (y+model_1 ==1),1,0)) #both models incorrect (FN or FP)
+    output_matrix[0][0] =np.sum(np.where(y+ model_1+model_2>2 ,1,0))  + (np.sum(np.where(y+ model_1+model_2==0 ,1,0))) #both models correct (TP or TN)
     
     #check if we can divide
     if (output_matrix[1][0] -output_matrix[0][1] != 0):
