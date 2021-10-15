@@ -1,25 +1,8 @@
+# Marc de Fluiter (5928087)
+# Idan Grady (7304447)
+# Pascal Verkade (6045057)
+
 import numpy as np
-
-class Classification_Tree:
-    # Classification tree node class which stores the relevant information for a node in the classification tree
-    
-    # Initializer for a classification tree node object
-    def __init__(self, rows_0 = None, rows_1 = None, feature = None, threshold = None, left_tree = None, right_tree = None, class_label = None):
-
-        # The amount of rows with class label 0 and 1
-        self.rows_0 = rows_0
-        self.rows_1 = rows_1
-
-        # The feature and the threshold value of the split, only for split nodes
-        self.feature = feature
-        self.threshold = threshold
-
-        # Information of the trees starting from both children nodes, only for split nodes
-        self.left_tree = left_tree
-        self.right_tree = right_tree
-        
-        # The majority class label prediction, only in leaf node
-        self.class_label = class_label
 
 def tree_grow(x, y, nmin, minleaf, nfeat):
     """Grows a classification tree on the input data under the given constraints
@@ -34,7 +17,6 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
     return: 
         Classification_Tree:    The classification tree obtained from the input data under the given constraints
     """
-    
 
     # Instantiate the tree and add the amount of rows for both class labels
     tree = Classification_Tree()
@@ -42,7 +24,6 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
     rows_class_1 = sum(y == 1)
     tree.rows_0 = rows_class_0
     tree.rows_1 = rows_class_1
-
 
     # Check if node is pure
     if rows_class_0 == 0 or rows_class_1 == 0:
@@ -54,7 +35,6 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
             tree.class_label = 1
 
         return tree
-
 
     # Get amount of rows and columns
     nrows, ncolumns = x.shape
@@ -69,7 +49,6 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
             tree.class_label = 1
 
         return tree
-
 
     # Determine columns to be considered for splitting
     if nfeat is None or nfeat >= ncolumns:
@@ -104,7 +83,6 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
 
         return tree
 
-
     # Retrieve information about the best split
     best_split_feature   = best_split_info['Feature']
     best_split_threshold = best_split_info['Threshold']
@@ -121,7 +99,6 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
     # Grow the left and right children trees and add them to the parent node
     tree.left_tree  = tree_grow(x[left_node_column_indices],  y[left_node_column_indices],  nmin, minleaf, nfeat)
     tree.right_tree = tree_grow(x[right_node_column_indices], y[right_node_column_indices], nmin, minleaf, nfeat)
-
 
     # Return the full tree
     return tree
@@ -299,3 +276,37 @@ def bootstrap_sample(x, y):
 
     # Return the bootstrap sample based on the random list of row numbers
     return ([x[row_numbers, :], y[row_numbers]])
+
+
+
+class Classification_Tree:
+    """ The Classification Tree object is used to represent a classification tree consisting of data entries, parameters for use in classifiers and subtrees
+    
+    Params:
+        rows_0 (int):                       The amount of rows with class label 0
+        rows_1 (int):                       The amount of rows with class label 1
+        feature (int):                      The Column number of the feature on which we determined the split of this (sub)tree / root node
+        threshold (float):                  The threshold value of the best split of this (sub)tree / root node
+        left_tree (Classification_Tree):    Left subtree of the root node of our this/current classification tree (only in split nodes)
+        right_tree (Classification_Tree):   Right subtree of the root node of this/current classification tree (only in split nodes)
+        class_label (int):                  Label classified by majority class  (only in leaf node)
+    """
+    # Classification tree node class which stores the relevant information for a node in the classification tree
+    
+    # Initializer for a classification tree node object
+    def __init__(self, rows_0 = None, rows_1 = None, feature = None, threshold = None, left_tree = None, right_tree = None, class_label = None):
+
+        # The amount of rows with class label 0 and 1
+        self.rows_0 = rows_0
+        self.rows_1 = rows_1
+
+        # The feature and the threshold value of the split, only for split nodes
+        self.feature = feature
+        self.threshold = threshold
+
+        # Information of the trees starting from both children nodes, only for split nodes
+        self.left_tree = left_tree
+        self.right_tree = right_tree
+        
+        # The majority class label prediction, only in leaf node
+        self.class_label = class_label
