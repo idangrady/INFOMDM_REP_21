@@ -31,14 +31,26 @@ import os
 # 
 # =============================================================================
 
+
+reviews = {}
+testlist = []
+
 def try_(path):
     filelist = []
 
     for root, dirs, files in os.walk(path):
     	for file in files:
             #append the file name to the list
-    		filelist.append(os.path.join(root,file))
+            filelist.append(os.path.join(root,file))
+            with open(os.path.join(root, file), 'r') as f:
+                text = f.read()
+                testlist.append(text)
+                if 'truth' in root:
+                    print('added 1')
+                    reviews[text] = 1
+                else:
+                    reviews[text] = 0
     return(filelist)
 
-
-print(try_("Data"))
+print(try_("Data/negative_polarity"))
+print(testlist)
