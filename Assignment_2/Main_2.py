@@ -41,10 +41,13 @@ def try_(path):
     return(txt_)
 
 
+
 def try_2(path):
     reviews = {}
     testlist = []
     filelist = []
+    arr = np.zeros((800,1)) #.reshape((([800], [1])))
+    idx =0
     for root, dirs, files in os.walk(path):
         for file in files:
             filelist.append(os.path.join(root,file))
@@ -54,11 +57,21 @@ def try_2(path):
                 text = f.read()
                 testlist.append(text)
                 if 'truth' in root:
-                    print('added 1')
                     reviews[text] = 1
+                    arr[idx] = 1
+                    idx+=1
                 else:
                     reviews[text] = 0
-    return(filelist)
+                    arr[idx] = 0
+                    idx+=1
+    
+    
+    print(arr)
+    print(np.sum(reviews==1))
+    print(len(filelist))
+    print(len(reviews))
+    #print(len(filelist) ==len(reviews))
+    return(len(filelist) ==len(reviews))
 
 
 
