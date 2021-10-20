@@ -65,3 +65,12 @@ try_("Data/negative_polarity")
 print(len(true_list), len(fake_list))
 print(len(reviews))
 
+#make bag of word representation (both a unigram version and bigram version!!!)
+#use vectorizer
+#use tfidf
+
+#now data ready to use in all classifiers
+
+
+
+
