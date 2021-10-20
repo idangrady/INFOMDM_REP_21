@@ -33,7 +33,10 @@ import os
 
 
 reviews = {}
-testlist = []
+complete_list = []
+true_list = []
+fake_list = []
+
 
 def try_(path):
     filelist = []
@@ -44,13 +47,17 @@ def try_(path):
             filelist.append(os.path.join(root,file))
             with open(os.path.join(root, file), 'r') as f:
                 text = f.read()
-                testlist.append(text)
+                complete_list.append(text)
                 if 'truth' in root:
-                    print('added 1')
                     reviews[text] = 1
+                    true_list.append(text)
                 else:
                     reviews[text] = 0
+                    fake_list.append(text)
     return(filelist)
 
+
 print(try_("Data/negative_polarity"))
-print(testlist)
+print(len(true_list), len(fake_list))
+print(len(reviews))
+
