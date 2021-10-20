@@ -49,15 +49,19 @@ def try_(path):
                 text = f.read()
                 complete_list.append(text)
                 if 'truth' in root:
+                    if text in reviews:
+                        print('gotcha true', text)
                     reviews[text] = 1
                     true_list.append(text)
                 else:
+                    if text in reviews:
+                        print('gotcha fake', text)
                     reviews[text] = 0
                     fake_list.append(text)
     return(filelist)
 
 
-print(try_("Data/negative_polarity"))
+try_("Data/negative_polarity")
 print(len(true_list), len(fake_list))
 print(len(reviews))
 
