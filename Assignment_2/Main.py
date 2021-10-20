@@ -19,17 +19,6 @@ import itertools
 import os
 
 
-# =============================================================================
-# 
-# def automated_concat_file(path):
-#     filelist = []
-# 
-#     filenames = ['file1.txt', 'file2.txt', ...]
-#     with open('path/to/output/file', 'w') as outfile:
-#         for line in itertools.chain.from_iterable(itertools.imap(open, filnames)):
-#             outfile.write(line)
-# 
-# =============================================================================
 
 
 reviews = {}
@@ -65,3 +54,12 @@ try_("Data/negative_polarity")
 print(len(true_list), len(fake_list))
 print(len(reviews))
 
+
+#stumming
+#ermoving stop words
+#reducing the number of words
+
+#important one, ==> motivate why we di specific action 
+
+#different folds ==> cross validation hyper parameters studing . optimal values. divide the data sets 
+#k- fold ==> not only 
