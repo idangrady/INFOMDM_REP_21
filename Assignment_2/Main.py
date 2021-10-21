@@ -74,6 +74,7 @@ def shuffle_list(list_):
 def print_tree(model):
     tree.plot_tree(preidct)
 
+<<<<<<< HEAD
 
 
 get_data("Data/negative_polarity")
@@ -112,3 +113,14 @@ X_train, X_test, y_train, y_test = train_test_split(tfidf, Labels, test_size=0.2
 #DecisionTreeClassifier
 model = DecisionTreeClassifier(random_state=0)
 preidct = model.fit(X_train, y_train)
+=======
+#make bag of word representation (both a unigram version and bigram version!!!)
+#use vectorizer
+#use tfidf
+
+#now data ready to use in all classifiers
+
+
+
+
+>>>>>>> e8b99dcff930eef0f543ba846f8f603f79f68f8e
