@@ -18,10 +18,18 @@ from sklearn.feature_selection import chi2
 #import  sklearn.metrics.precision_recall_fscore_support as matrix_recall_precision
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn import preprocessing
+from sklearn import utils
 import itertools
 import os
 import random as rd
 from sklearn import tree
+from sklearn.model_selection import KFold
+import pandas as pd
+import statistics
+
+
+
 
 
 
@@ -52,6 +60,7 @@ def get_data(path):
     return(filelist)
 
 
+
 #shuffle the list randomly
 def shuffle_list(list_):
     size_list = len(list_)
@@ -72,9 +81,49 @@ def shuffle_list(list_):
         
         
 def print_tree(model):
-    tree.plot_tree(preidct)
+    tree.plot_tree(model)
 
-<<<<<<< HEAD
+
+
+def get_score(model,x_train, x_test, y_train, y_test):
+    model.fit(x_train, y_train)
+    return model.score(x_test, y_test)
+
+
+
+
+def train_folds(classifier ,data_concat,  fold, n_fold=5):
+    kfold = fold(n_splits=n_fold)
+    
+    scores= []
+    
+    for train_idx, test_idx in kfold.split(data_concat):
+
+
+        #convert to Range so we can slice the array
+        start_idx_train, end_idx_train = train_idx[0], train_idx[-1]
+        start_idx_test, end_idx_test = test_idx[0], test_idx[-1]
+        
+        print(f" Test start  {start_idx_test}  end:{end_idx_test}")
+        
+    #slicing the array
+        X_train_fold = data_concat[start_idx_train :end_idx_train , 1:]
+        X_test_fold = data_concat[start_idx_test: end_idx_test,1:]
+        
+        y_train_fold =( data_concat[start_idx_train:end_idx_train,0]).astype('int')
+        y_test_fold = (data_concat[start_idx_test: end_idx_test,0]).astype('int')
+        
+        y_train_fold, y_test_fold = np.expand_dims(y_train_fold, axis  =1), np.expand_dims(y_test_fold, axis =1)
+
+        print(X_train_fold.shape, X_test_fold.shape, y_train_fold.shape, y_test_fold.shape)
+        print()
+        get_score_ = get_score(classifier,X_train_fold, X_test_fold, y_train_fold, y_test_fold )
+        scores.append(get_score_)
+    
+    
+    #Return
+    return statistics.mean(scores)
+
 
 
 get_data("Data/negative_polarity")
@@ -86,6 +135,8 @@ shuffle_list = shuffle_list(labels_list)
 
 #lables after shuffle
 Labels = (np.array(shuffle_list)[:,1])
+Labels = np.expand_dims(Labels, axis= 1)
+
 
 data_ = list(np.array(shuffle_list)[:,0])
 
@@ -104,23 +155,23 @@ b_gram = bigram_vectorizer.fit_transform(data_).toarray()
 transformer = TfidfTransformer( smooth_idf=False)
 tfidf = transformer.fit_transform(vectorized_data).toarray()
 
+
+
+print(tfidf.shape)
+print(Labels.shape)
+
+df = pd.DataFrame(Labels)
+df_2 = pd.DataFrame(tfidf)
+
+concat_df = pd.concat([df,df_2], axis= 1)
+
+data_nump_conc = np.array(concat_df)
+data_nump_conc = data_nump_conc.astype('float32')
 # divide to X_train, X_test, y_train, y_test
 
-X_train, X_test, y_train, y_test = train_test_split(tfidf, Labels, test_size=0.25, random_state=42)
+y_check = np.expand_dims(data_nump_conc[:,0], axis = 1)
 
+print(train_folds(MultinomialNB(), data_nump_conc,KFold,5))
 
+input= input("Continue? ")
 
-#DecisionTreeClassifier
-model = DecisionTreeClassifier(random_state=0)
-preidct = model.fit(X_train, y_train)
-=======
-#make bag of word representation (both a unigram version and bigram version!!!)
-#use vectorizer
-#use tfidf
-
-#now data ready to use in all classifiers
-
-
-
-
->>>>>>> e8b99dcff930eef0f543ba846f8f603f79f68f8e
