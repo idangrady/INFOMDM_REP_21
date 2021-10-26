@@ -104,7 +104,7 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5):
         start_idx_train, end_idx_train = train_idx[0], train_idx[-1]
         start_idx_test, end_idx_test = test_idx[0], test_idx[-1]
         
-        print(f" Test start  {start_idx_test}  end:{end_idx_test}")
+#        print(f" Test start  {start_idx_test}  end:{end_idx_test}")
         
     #slicing the array
         X_train_fold = data_concat[start_idx_train :end_idx_train , 1:]
@@ -115,8 +115,8 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5):
         
         y_train_fold, y_test_fold = np.expand_dims(y_train_fold, axis  =1), np.expand_dims(y_test_fold, axis =1)
 
-        print(X_train_fold.shape, X_test_fold.shape, y_train_fold.shape, y_test_fold.shape)
-        print()
+ #       print(X_train_fold.shape, X_test_fold.shape, y_train_fold.shape, y_test_fold.shape)
+#        print()
         get_score_ = get_score(classifier,X_train_fold, X_test_fold, y_train_fold, y_test_fold )
         scores.append(get_score_)
     
@@ -171,7 +171,10 @@ data_nump_conc = data_nump_conc.astype('float32')
 
 y_check = np.expand_dims(data_nump_conc[:,0], axis = 1)
 
-print(train_folds(MultinomialNB(), data_nump_conc,KFold,5))
+
+for model in [MultinomialNB(), DecisionTreeClassifier(),LogisticRegression()]:
+    
+    print(train_folds(model, data_nump_conc,KFold,5))
 
 input= input("Continue? ")
 
