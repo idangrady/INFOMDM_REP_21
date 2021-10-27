@@ -10,6 +10,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model  import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectFromModel
 
 # Analysis
 from sklearn.model_selection import train_test_split
@@ -86,7 +87,7 @@ def print_tree(model):
 
 
 
-def get_score(model,x_train, x_test, y_train, y_test):
+def get_score(model, x_train, x_test, y_train, y_test):
     model.fit(x_train, y_train)
 
     y_pred = model.predict(x_test)
@@ -100,12 +101,12 @@ def get_score(model,x_train, x_test, y_train, y_test):
 
 def train_folds(classifier ,data_concat,  fold, n_fold=5):
     kfold = fold(n_splits=n_fold)
-    
+
     scores= []
     precisions = []
     recalls = []
     fscores = []
-    
+
     for train_idx, test_idx in kfold.split(data_concat):
 
 
@@ -127,6 +128,7 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5):
  #       print(X_train_fold.shape, X_test_fold.shape, y_train_fold.shape, y_test_fold.shape)
 #        print()
         get_score_, precision, recall, fscore = get_score(classifier,X_train_fold, X_test_fold, y_train_fold, y_test_fold )
+
         scores.append(get_score_)
         precisions.append(precision)
         recalls.append(recall)
@@ -137,8 +139,8 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5):
 
 
 
-#get_data("Assignment_2/Data/negative_polarity")
-get_data("Data/negative_polarity")
+get_data("Assignment_2/Data/negative_polarity")
+#get_data("Data/negative_polarity")
 
 #shuffle data
 
@@ -167,7 +169,9 @@ b_gram = bigram_vectorizer.fit_transform(data_).toarray()
 transformer = TfidfTransformer( smooth_idf=False)
 tfidf = transformer.fit_transform(vectorized_data).toarray()
 
-
+#Bigram transformer
+b_gram_transformer = TfidfTransformer( smooth_idf=False)
+b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 
 print(tfidf.shape)
 print(Labels.shape)
@@ -182,7 +186,6 @@ data_nump_conc = data_nump_conc.astype('float32')
 # divide to X_train, X_test, y_train, y_test
 
 y_check = np.expand_dims(data_nump_conc[:,0], axis = 1)
-
 
 # Hyper-parameters for random forests
 minleaf = None
@@ -199,9 +202,35 @@ if nfeat is None:
 if ntrees is None:
     ntrees = 100
 
-for model in [MultinomialNB(), LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier(n_estimators = ntrees, min_samples_leaf = minleaf, min_samples_split= nmin, max_features = nfeat)]:
+multinomial_model = MultinomialNB()
+for model in [multinomial_model, LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier(n_estimators = ntrees, min_samples_leaf = minleaf, min_samples_split = nmin, max_features = nfeat)]:
     
     # (Accuracy, Precision, Recall, F-score)
-    print(train_folds(model, data_nump_conc,KFold,5))
+    print(train_folds(model, data_nump_conc, KFold, 5))
 
-input= input("Continue? ")
+
+
+vocabulary_mapping = C_tvectorizer.vocabulary_ # {"word": column_number}
+reverse_mapping = {}                           # {column_number: "word"}
+for k, v in vocabulary_mapping.items():
+    reverse_mapping[v] = k
+
+def subtract_log_probs(array):
+    return array[1] - array[0]
+
+feature_log_probabilities = multinomial_model.feature_log_prob_ # [(log P(w|Deceitful), log P(w|Truthful)), ...] (deceitful = 0, truthful = 1)
+probabilities = subtract_log_probs(feature_log_probabilities)   # [log P(w|Truthful) - log P(w|Deceitful), ...]
+
+top_N = 20
+
+max_indices = (-probabilities).argsort()[:top_N]
+min_indices = probabilities.argsort()[:top_N]
+
+for i in range(0, top_N):
+    print("Feature: " + reverse_mapping[max_indices[i]] + ", Score: " + str(probabilities[max_indices[i]]))
+for i in range(0, top_N):
+    print("Feature: " + reverse_mapping[min_indices[i]] + ", Score: " + str(probabilities[min_indices[i]]))
+
+
+
+input = input("Continue? ")
