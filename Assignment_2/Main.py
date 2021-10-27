@@ -13,7 +13,7 @@ from sklearn.model_selection import GridSearchCV
 # Analysis
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
-from sklearn.metrics import mean_absolute_error 
+from sklearn.metrics import precision_recall_fscore_support, mean_absolute_error
 from sklearn.feature_selection import chi2
 #import  sklearn.metrics.precision_recall_fscore_support as matrix_recall_precision
 from sklearn.feature_extraction.text import CountVectorizer
@@ -87,7 +87,12 @@ def print_tree(model):
 
 def get_score(model,x_train, x_test, y_train, y_test):
     model.fit(x_train, y_train)
-    return model.score(x_test, y_test)
+
+    y_pred = model.predict(x_test)
+
+    precision, recall, fscore, _ = precision_recall_fscore_support(y_test, y_pred, average = 'macro')
+
+    return (model.score(x_test, y_test), precision, recall, fscore)
 
 
 
@@ -96,6 +101,9 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5):
     kfold = fold(n_splits=n_fold)
     
     scores= []
+    precisions = []
+    recalls = []
+    fscores = []
     
     for train_idx, test_idx in kfold.split(data_concat):
 
@@ -117,12 +125,14 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5):
 
  #       print(X_train_fold.shape, X_test_fold.shape, y_train_fold.shape, y_test_fold.shape)
 #        print()
-        get_score_ = get_score(classifier,X_train_fold, X_test_fold, y_train_fold, y_test_fold )
+        get_score_, precision, recall, fscore = get_score(classifier,X_train_fold, X_test_fold, y_train_fold, y_test_fold )
         scores.append(get_score_)
-    
-    
+        precisions.append(precision)
+        recalls.append(recall)
+        fscores.append(fscore)
+
     #Return
-    return statistics.mean(scores)
+    return (statistics.mean(scores), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores))
 
 
 
@@ -174,6 +184,7 @@ y_check = np.expand_dims(data_nump_conc[:,0], axis = 1)
 
 for model in [MultinomialNB(), DecisionTreeClassifier(),LogisticRegression()]:
     
+    # (Accuracy, Precision, Recall, F-score)
     print(train_folds(model, data_nump_conc,KFold,5))
 
 input= input("Continue? ")
