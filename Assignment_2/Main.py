@@ -9,6 +9,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model  import LogisticRegression
 from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
 
 # Analysis
 from sklearn.model_selection import train_test_split
@@ -136,6 +137,7 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5):
 
 
 
+#get_data("Assignment_2/Data/negative_polarity")
 get_data("Data/negative_polarity")
 
 #shuffle data
@@ -182,10 +184,24 @@ data_nump_conc = data_nump_conc.astype('float32')
 y_check = np.expand_dims(data_nump_conc[:,0], axis = 1)
 
 
-for model in [MultinomialNB(), DecisionTreeClassifier(),LogisticRegression()]:
+# Hyper-parameters for random forests
+minleaf = None
+nmin = None
+nfeat = None
+ntrees = None
+
+if minleaf is None:
+    minleaf = 1
+if nmin is None:
+    nmin = 2
+if nfeat is None:
+    nfeat = "auto"
+if ntrees is None:
+    ntrees = 100
+
+for model in [MultinomialNB(), LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier(n_estimators = ntrees, min_samples_leaf = minleaf, min_samples_split= nmin, max_features = nfeat)]:
     
     # (Accuracy, Precision, Recall, F-score)
     print(train_folds(model, data_nump_conc,KFold,5))
 
 input= input("Continue? ")
-
