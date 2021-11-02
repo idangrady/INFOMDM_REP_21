@@ -157,8 +157,8 @@ data_ = list(np.array(shuffle_list)[:,0])
 #Text Cleaning
 
 #vectorizers
-C_tvectorizer = CountVectorizer(min_df = 3, max_df = 0.8 ) # ngram_range = (1,2,3)
-bigram_vectorizer = CountVectorizer(ngram_range=(1, 2),token_pattern=r'\b\w+\b', min_df=1)
+C_tvectorizer = CountVectorizer(min_df = 3, max_df = 0.8) # ngram_range = (1,2,3)
+bigram_vectorizer = CountVectorizer(ngram_range = (1, 2), token_pattern = r'\b\w+\b', min_df = 1)
 
 #vctorizling
 vectorized_data  = C_tvectorizer.fit_transform(data_).toarray()
@@ -167,69 +167,71 @@ b_gram = bigram_vectorizer.fit_transform(data_).toarray()
 # Tf–idf term weighting 
 #maing the data to Tf-IDF values
 transformer = TfidfTransformer( smooth_idf=False)
-tfidf = transformer.fit_transform(vectorized_data).toarray()
+single_tfidf = transformer.fit_transform(vectorized_data).toarray()
 
 #Bigram transformer
 b_gram_transformer = TfidfTransformer( smooth_idf=False)
 b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 
-print(tfidf.shape)
-print(Labels.shape)
+for tfidf, vectorizer in [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_vectorizer)]:
 
-df = pd.DataFrame(Labels)
-df_2 = pd.DataFrame(tfidf)
+    print(tfidf.shape)
+    print(Labels.shape)
 
-concat_df = pd.concat([df,df_2], axis= 1)
+    df = pd.DataFrame(Labels)
+    df_2 = pd.DataFrame(tfidf)
 
-data_nump_conc = np.array(concat_df)
-data_nump_conc = data_nump_conc.astype('float32')
-# divide to X_train, X_test, y_train, y_test
+    concat_df = pd.concat([df,df_2], axis= 1)
 
-y_check = np.expand_dims(data_nump_conc[:,0], axis = 1)
+    data_nump_conc = np.array(concat_df)
+    data_nump_conc = data_nump_conc.astype('float32')
+    # divide to X_train, X_test, y_train, y_test
 
-# Hyper-parameters for random forests
-minleaf = None
-nmin = None
-nfeat = None
-ntrees = None
+    y_check = np.expand_dims(data_nump_conc[:,0], axis = 1)
 
-if minleaf is None:
-    minleaf = 1
-if nmin is None:
-    nmin = 2
-if nfeat is None:
-    nfeat = "auto"
-if ntrees is None:
-    ntrees = 100
+    # Hyper-parameters for random forests
+    minleaf = None
+    nmin = None
+    nfeat = None
+    ntrees = None
 
-multinomial_model = MultinomialNB()
-for model in [multinomial_model, LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier(n_estimators = ntrees, min_samples_leaf = minleaf, min_samples_split = nmin, max_features = nfeat)]:
-    
-    # (Accuracy, Precision, Recall, F-score)
-    print(train_folds(model, data_nump_conc, KFold, 5))
+    if minleaf is None:
+        minleaf = 1
+    if nmin is None:
+        nmin = 2
+    if nfeat is None:
+        nfeat = "auto"
+    if ntrees is None:
+        ntrees = 100
+
+    multinomial_model = MultinomialNB()
+    for model in [multinomial_model, LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier(n_estimators = ntrees, min_samples_leaf = minleaf, min_samples_split = nmin, max_features = nfeat)]:
+
+        # (Accuracy, Precision, Recall, F-score)
+        print(train_folds(model, data_nump_conc, KFold, 5))
 
 
 
-vocabulary_mapping = C_tvectorizer.vocabulary_ # {"word": column_number}
-reverse_mapping = {}                           # {column_number: "word"}
-for k, v in vocabulary_mapping.items():
-    reverse_mapping[v] = k
+    vocabulary_mapping = vectorizer.vocabulary_ # {"word": column_number}
+    reverse_mapping = {}                           # {column_number: "word"}
+    for k, v in vocabulary_mapping.items():
+        reverse_mapping[v] = k
 
-def subtract_log_probs(array):
-    return array[1] - array[0]
+    def subtract_log_probs(array):
+        return array[1] - array[0]
 
-feature_log_probabilities = multinomial_model.feature_log_prob_ # [(log P(w|Deceitful), log P(w|Truthful)), ...] (deceitful = 0, truthful = 1)
-probabilities = subtract_log_probs(feature_log_probabilities)   # [log P(w|Truthful) - log P(w|Deceitful), ...]
+    feature_log_probabilities = multinomial_model.feature_log_prob_ # [(log P(w|Deceitful), log P(w|Truthful)), ...] (deceitful = 0, truthful = 1)
+    probabilities = subtract_log_probs(feature_log_probabilities)   # [log P(w|Truthful) - log P(w|Deceitful), ...]
 
-top_N = 20
+    top_N = 20
 
-max_indices = (-probabilities).argsort()[:top_N]
-min_indices = probabilities.argsort()[:top_N]
+    max_indices = (-probabilities).argsort()[:top_N]
+    min_indices = probabilities.argsort()[:top_N]
 
-for i in range(0, top_N):
-    print("Feature: " + reverse_mapping[max_indices[i]] + ", Score: " + str(probabilities[max_indices[i]]))
-for i in range(0, top_N):
-    print("Feature: " + reverse_mapping[min_indices[i]] + ", Score: " + str(probabilities[min_indices[i]]))
+    for i in range(0, top_N):
+        print("Feature: " + reverse_mapping[max_indices[i]] + ", Score: " + str(probabilities[max_indices[i]]))
+    for i in range(0, top_N):
+        print("Feature: " + reverse_mapping[min_indices[i]] + ", Score: " + str(probabilities[min_indices[i]]))
 
 
 
