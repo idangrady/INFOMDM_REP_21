@@ -49,7 +49,7 @@ reviews = {}
 complete_list = []
 true_list = []
 fake_list = []
-df_ = pd.DataFrame(columns = ["Model", "Accuracy", "Precision", "Recall", "F1 Score","Folds","Best Parameters"])
+df_ = pd.DataFrame(columns = ["Model", "Accuracy", "Precision", "Recall", "F1 Score","Folds","type","Best Parameters"])
 
 def get_data(path):
     filelist = []
@@ -122,7 +122,7 @@ def append_data_to_df(data, df):
     return  df
 
 
-def train_folds(classifier ,data_concat,  fold, n_fold=5, print_plots = False):
+def train_folds(classifier ,data_concat,  fold, type_,n_fold=5, print_plots = False):
 
     scores= []
     precisions = []
@@ -148,7 +148,7 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5, print_plots = False):
     
     if print_plots:
         plot_importance_features(tuned_params)
-    return (str(classifier)[:-2], statistics.mean(scores), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores),n_fold, tuned_params.best_params_)
+    return (str(classifier)[:-2], statistics.mean(scores), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores),n_fold, type_,tuned_params.best_params_)
 
 
 
@@ -187,9 +187,15 @@ single_tfidf = transformer.fit_transform(vectorized_data).toarray()
 b_gram_transformer = TfidfTransformer( smooth_idf=False)
 b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 
+save=True
+idx = 0
+list_of_vectoresed_word = [single_tfidf, vectorized_data ,b_gram_tfidf, bigram_vectorizer]
 
-
-for tfidf, vectorizer in [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_vectorizer)]:
+for tfidf in list_of_vectoresed_word:
+    type_ = "unigram"
+    if (idx-(len(list_of_vectoresed_word)/2)>=0):
+        type_ ="Bigram"
+    idx +=1
     df = pd.DataFrame(Labels)
     df_2 = pd.DataFrame(tfidf)
 
@@ -201,10 +207,11 @@ for tfidf, vectorizer in [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_v
         for model in [ MultinomialNB(), LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier()]:
 
             # (Accuracy, Precision, Recall, F-score)
-            result =  train_folds(model, data_nump_conc, KFold, k,print_plots = False)
+            result =  train_folds(model, data_nump_conc, KFold,type_, k,print_plots = False)
             
             df= append_data_to_df(result,df_)
     
     print(df)
     
-df.to_csv('resukt.csv', sep='\t', index=False)
+if save:
+    df.to_csv('result.csv', index=False)
