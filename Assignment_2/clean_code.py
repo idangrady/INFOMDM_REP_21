@@ -189,10 +189,10 @@ b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 
 save=True
 idx = 0
-list_of_vectoresed_word = [single_tfidf, vectorized_data ,b_gram_tfidf, bigram_vectorizer]
+list_of_vectoresed_word = [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_vectorizer)]
 
-for tfidf in list_of_vectoresed_word:
-    type_ = "unigram"
+for tfidf, vectorizer  in list_of_vectoresed_word:
+    type_ = "Unigram"
     if (idx-(len(list_of_vectoresed_word)/2)>=0):
         type_ ="Bigram"
     idx +=1
@@ -214,4 +214,4 @@ for tfidf in list_of_vectoresed_word:
     print(df)
     
 if save:
-    df.to_csv('result.csv', index=False)
+    df.to_csv('Result.csv', index=False)
