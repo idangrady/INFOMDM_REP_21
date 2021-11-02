@@ -34,8 +34,6 @@ import statistics
 
 
 
-
-
 #containing words
 reviews = {}
 complete_list = []
@@ -45,7 +43,7 @@ fake_list = []
 
 def get_data(path):
     filelist = []
-
+    xx= (os.walk(path))
     for root, dirs, files in os.walk(path):
     	for file in files:
             #append the file name to the list
@@ -88,7 +86,7 @@ def print_tree(model):
 
 
 def get_score(model, x_train, x_test, y_train, y_test):
-    model.fit(x_train, y_train)
+    model.fit(x_train, y_train.ravel())
 
     y_pred = model.predict(x_test)
 
@@ -139,7 +137,7 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5):
 
 
 
-get_data("Assignment_2/Data/negative_polarity")
+get_data('Data/negative_polarity')
 #get_data("Data/negative_polarity")
 
 #shuffle data
