@@ -39,7 +39,7 @@ reviews = {}
 complete_list = []
 true_list = []
 fake_list = []
-df_ = pd.DataFrame(columns = ["Model", "Accuracy", "Precision", "Recall", "F1 Score"])
+df_ = pd.DataFrame(columns = ["Model", "Accuracy", "Precision", "Recall", "F1 Score","Folds"])
 
 def get_data(path):
     filelist = []
@@ -86,10 +86,9 @@ def print_tree(model):
 
 
 def get_score(model, x_train, x_test, y_train, y_test):
+    
     model.fit(x_train, y_train.ravel())
-
     y_pred = model.predict(x_test)
-
     precision, recall, fscore, _ = precision_recall_fscore_support(y_test, y_pred, average = 'macro')
 
     return (model.score(x_test, y_test), precision, recall, fscore)
@@ -137,7 +136,7 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5):
         fscores.append(fscore)
 
     #Return
-    return (str(classifier)[:-2], statistics.mean(scores), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores))
+    return (str(classifier)[:-2], statistics.mean(scores), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores),k)
 
 
 
@@ -213,16 +212,17 @@ for tfidf, vectorizer in [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_v
 
 
 
-    multinomial_model = MultinomialNB()
-    for model in [multinomial_model, LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier(n_estimators = ntrees, min_samples_leaf = minleaf, min_samples_split = nmin, max_features = nfeat)]:
+    for k in [5,10]:
+        for model in [ MultinomialNB(), LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier(n_estimators = ntrees, min_samples_leaf = minleaf, min_samples_split = nmin, max_features = nfeat)]:
 
-        # (Accuracy, Precision, Recall, F-score)
-        result =  train_folds(model, data_nump_conc, KFold, 5)
-        print(f"Model {model} {result}")
-        
-        df= append_data_to_df(result,df_)
+            # (Accuracy, Precision, Recall, F-score)
+            result =  train_folds(model, data_nump_conc, KFold, k)
+          #  print(f"Model {model} {result}")
+            
+            df= append_data_to_df(result,df_)
     
     print(df)
+    print()
     if bool_print==True:
         vocabulary_mapping = vectorizer.vocabulary_ # {"word": column_number}
         reverse_mapping = {}                           # {column_number: "word"}
@@ -232,7 +232,7 @@ for tfidf, vectorizer in [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_v
         def subtract_log_probs(array):
             return array[1] - array[0]
     
-        feature_log_probabilities = multinomial_model.feature_log_prob_ # [(log P(w|Deceitful), log P(w|Truthful)), ...] (deceitful = 0, truthful = 1)
+        feature_log_probabilities = MultinomialNB().feature_log_prob_ # [(log P(w|Deceitful), log P(w|Truthful)), ...] (deceitful = 0, truthful = 1)
         probabilities = subtract_log_probs(feature_log_probabilities)   # [log P(w|Truthful) - log P(w|Deceitful), ...]
     
         top_N = 20
