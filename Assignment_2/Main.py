@@ -39,7 +39,7 @@ reviews = {}
 complete_list = []
 true_list = []
 fake_list = []
-
+df_ = pd.DataFrame(columns = ["Model", "Accuracy", "Precision", "Recall", "F1 Score"])
 
 def get_data(path):
     filelist = []
@@ -94,7 +94,11 @@ def get_score(model, x_train, x_test, y_train, y_test):
 
     return (model.score(x_test, y_test), precision, recall, fscore)
 
-
+def append_data_to_df(data, df):
+    list_ob = list(data)
+    length = len(df)
+    df.loc[length] = list_ob
+    return  df
 
 
 def train_folds(classifier ,data_concat,  fold, n_fold=5):
@@ -133,7 +137,7 @@ def train_folds(classifier ,data_concat,  fold, n_fold=5):
         fscores.append(fscore)
 
     #Return
-    return (statistics.mean(scores), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores))
+    return (str(classifier)[:-2], statistics.mean(scores), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores))
 
 
 
@@ -171,11 +175,16 @@ single_tfidf = transformer.fit_transform(vectorized_data).toarray()
 b_gram_transformer = TfidfTransformer( smooth_idf=False)
 b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 
+bool_print = False
+
+
 for tfidf, vectorizer in [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_vectorizer)]:
-
-    print(tfidf.shape)
-    print(Labels.shape)
-
+# =============================================================================
+# 
+#     print(tfidf.shape)
+#     print(Labels.shape)
+# 
+# =============================================================================
     df = pd.DataFrame(Labels)
     df_2 = pd.DataFrame(tfidf)
 
@@ -202,35 +211,38 @@ for tfidf, vectorizer in [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_v
     if ntrees is None:
         ntrees = 100
 
+
+
     multinomial_model = MultinomialNB()
     for model in [multinomial_model, LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier(n_estimators = ntrees, min_samples_leaf = minleaf, min_samples_split = nmin, max_features = nfeat)]:
 
         # (Accuracy, Precision, Recall, F-score)
-        print(train_folds(model, data_nump_conc, KFold, 5))
+        result =  train_folds(model, data_nump_conc, KFold, 5)
+        print(f"Model {model} {result}")
+        
+        df= append_data_to_df(result,df_)
+    
+    print(df)
+    if bool_print==True:
+        vocabulary_mapping = vectorizer.vocabulary_ # {"word": column_number}
+        reverse_mapping = {}                           # {column_number: "word"}
+        for k, v in vocabulary_mapping.items():
+            reverse_mapping[v] = k
+    
+        def subtract_log_probs(array):
+            return array[1] - array[0]
+    
+        feature_log_probabilities = multinomial_model.feature_log_prob_ # [(log P(w|Deceitful), log P(w|Truthful)), ...] (deceitful = 0, truthful = 1)
+        probabilities = subtract_log_probs(feature_log_probabilities)   # [log P(w|Truthful) - log P(w|Deceitful), ...]
+    
+        top_N = 20
+    
+        max_indices = (-probabilities).argsort()[:top_N]
+        min_indices = probabilities.argsort()[:top_N]
+    
+        for i in range(0, top_N):
+            print("Feature: " + reverse_mapping[max_indices[i]] + ", Score: " + str(probabilities[max_indices[i]]))
+        for i in range(0, top_N):
+            print("Feature: " + reverse_mapping[min_indices[i]] + ", Score: " + str(probabilities[min_indices[i]]))
+    
 
-
-
-    vocabulary_mapping = vectorizer.vocabulary_ # {"word": column_number}
-    reverse_mapping = {}                           # {column_number: "word"}
-    for k, v in vocabulary_mapping.items():
-        reverse_mapping[v] = k
-
-    def subtract_log_probs(array):
-        return array[1] - array[0]
-
-    feature_log_probabilities = multinomial_model.feature_log_prob_ # [(log P(w|Deceitful), log P(w|Truthful)), ...] (deceitful = 0, truthful = 1)
-    probabilities = subtract_log_probs(feature_log_probabilities)   # [log P(w|Truthful) - log P(w|Deceitful), ...]
-
-    top_N = 20
-
-    max_indices = (-probabilities).argsort()[:top_N]
-    min_indices = probabilities.argsort()[:top_N]
-
-    for i in range(0, top_N):
-        print("Feature: " + reverse_mapping[max_indices[i]] + ", Score: " + str(probabilities[max_indices[i]]))
-    for i in range(0, top_N):
-        print("Feature: " + reverse_mapping[min_indices[i]] + ", Score: " + str(probabilities[min_indices[i]]))
-
-
-
-input = input("Continue? ")
