@@ -111,7 +111,7 @@ def model_cv(model):
     elif name_model =="LogisticRegression":
         return( name_model, {'penalty': ['l1', 'l2'], 'C': [0.01, 0.1, 0.25, 0.5, 1, 2.5, 10]})
     else:
-        return (name_model, {'n_estimators': [10, 50, 100], 'max_depth': [None, 2, 4, 8,16], 'min_samples_split': [2, 4, 8,16]}) # add for the real analysis also 500 and 1000
+        return (name_model, {'n_estimators': [10, 50, 100,500,1000], 'max_depth': [None, 2, 4, 8,16,30], 'min_samples_split': [2, 4, 8,16,30]}) # add for the real analysis also 500 and 1000
     
 
 # =============================================================================
