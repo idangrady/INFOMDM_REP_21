@@ -111,7 +111,7 @@ def model_cv(model):
     elif name_model =="LogisticRegression":
         return( name_model, {'penalty': ['l1', 'l2'], 'C': [0.01, 0.1, 0.25, 0.5, 1, 2.5, 10]})
     else:
-        return (name_model, {'n_estimators': [10, 50, 100], 'max_depth': [None, 2, 4, 8,16,30], 'min_samples_split': [2, 4, 8,16,30,40]}) # add for the real analysis also 500 and 1000
+        return (name_model, {'n_estimators': [10, 50, 100, 500, 1000], 'max_depth': [None, 2, 4, 8,16,30], 'min_samples_split': [2, 4, 8,16,30]}) # add for the real analysis also 500 and 1000
     
 
 # =============================================================================
@@ -168,13 +168,17 @@ Labels = (np.array(shuffle_list)[:,1])
 Labels = np.expand_dims(Labels, axis= 1)
 
 
+X_all = np.array(shuffle_list)[:,0]
+
+
+
 data_ = list(np.array(shuffle_list)[:,0])
 
 #Text Cleaning
 
 #vectorizers
-C_tvectorizer = CountVectorizer(min_df = 1, max_df = 0.7) # ngram_range = (1,2,3)
-bigram_vectorizer = CountVectorizer(ngram_range = (2, 2), min_df = 1,max_df = 0.7) # token_pattern = r'\b\w+\b',
+C_tvectorizer = CountVectorizer(min_df = 2, max_df = 0.7) # ngram_range = (1,2,3)
+bigram_vectorizer = CountVectorizer(ngram_range = (2, 2), min_df = 2,max_df = 0.7) # token_pattern = r'\b\w+\b',
 
 #vctorizling
 vectorized_data  = C_tvectorizer.fit_transform(data_).toarray()
@@ -192,6 +196,8 @@ b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 save=True
 idx = 0
 list_of_vectoresed_word = [single_tfidf, b_gram_tfidf ] #C_tvectorizer bigram_vectorizer
+
+
 
 for tfidf in list_of_vectoresed_word:
     type_ = "Unigram"
