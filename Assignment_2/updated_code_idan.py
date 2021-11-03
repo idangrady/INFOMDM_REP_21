@@ -178,7 +178,7 @@ data_ = list(np.array(shuffle_list)[:,0])
 
 #vectorizers
 C_tvectorizer = CountVectorizer(min_df = 2, max_df = 0.7) # ngram_range = (1,2,3)
-bigram_vectorizer = CountVectorizer(ngram_range = (2, 2), min_df = 2,max_df = 0.7) # token_pattern = r'\b\w+\b',
+bigram_vectorizer = CountVectorizer(ngram_range = (1, 2), min_df = 2,max_df = 0.7) # token_pattern = r'\b\w+\b',
 
 #vctorizling
 vectorized_data  = C_tvectorizer.fit_transform(data_).toarray()
@@ -254,5 +254,5 @@ for tfidf in list_of_vectoresed_word:
 
     
 if save:
-    df_.to_csv('Result.csv', index=False)
+    df_.to_csv('Result_combined_uni_Bi.csv', index=False)
     #dftesting.to_csv('ResultTesting.csv', index=False)
