@@ -193,7 +193,7 @@ single_tfidf = transformer.fit_transform(vectorized_data).toarray()
 b_gram_transformer = TfidfTransformer( smooth_idf=False)
 b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 
-save=True
+save=False
 idx = 0
 list_of_vectoresed_word = [single_tfidf, b_gram_tfidf ] #C_tvectorizer bigram_vectorizer
 
