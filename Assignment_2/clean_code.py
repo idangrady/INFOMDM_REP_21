@@ -150,7 +150,7 @@ def train_folds(classifier ,data_concat,  fold, type_,n_fold=5, print_plots = Fa
     
     if print_plots:
         plot_importance_features(tuned_params)
-    return (str(classifier)[:-2], statistics.mean(scores),statistics.mean(train_accu), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores),n_fold, type_,tuned_params.best_params_)
+    return (str(classifier)[:-2], statistics.mean(scores),statistics.mean(train_accu), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores),n_fold, type_,tuned_params.best_params_), tuned_params
 
 
 
@@ -211,14 +211,29 @@ for tfidf in list_of_vectoresed_word:
     data_nump_conc = np.array(concat_df)
     data_nump_conc = data_nump_conc.astype('float32')
 
+    data_split_training =  concat_df.iloc[round(len(df)/5):,:]
+    data_split_testing = concat_df.iloc[:round(len(df)/5)+1:,:]
+
+    data_training = np.array(data_split_training)
+    data_training = data_training.astype('float32')
+    data_testing = np.array(data_split_testing)
+    data_testing = data_testing.astype('float32')
+
     for k in [5,10]:
         for model in [ MultinomialNB(), LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier()]:
 
             # (Accuracy, Precision, Recall, F-score)
-            result =  train_folds(model, data_nump_conc, KFold,type_, k,print_plots = False)
-            
+            result, model =  train_folds(model, data_training, KFold,type_, k,print_plots = False)
             df= append_data_to_df(result,df_)
     
+            x_testing = data_testing[:, 1:]
+            y_testing = data_testing[:,0]
+            y_testing_pred = model.predict(x_testing)
+            
+            acc = model.score(x_testing, y_testing)
+            results = precision_recall_fscore_support(y_testing, y_testing_pred, average = 'macro')
+            print('model: ', model)
+            print(' acc: ',  acc, ' precision: ', results[0], ' recall: ', results[1], ' fscore: ', results[2])
     print(df)
     
 if save:
