@@ -236,14 +236,12 @@ for tfidf in list_of_vectoresed_word:
             
             acc = model.score(x_testing, y_testing)
             train_score = model.score(data_training[:,1:], data_training[:,0])
-            results = precision_recall_fscore_support(y_testing, y_testing_pred, average = 'macro')
+            precision, recall, fscore, _ = precision_recall_fscore_support(y_testing, y_testing_pred, average = 'macro')
+
+
             
-            test_result = (name,train_score, acc,  results[0],  results[1], results[2],k,type_, model.best_params_)
-            print(len(test_result))
-            #test_result = { "Train Accuracy":train_score,"Accuracy": acc, "Precision": results[0], "Recall": results[1], "F1 Score": results[2], "Best Parameters":model.best_params_}
+            test_result = (name,train_score, acc,  precision,  recall, fscore,k,type_, model.best_params_)
 
-
-  #          dftesting.append(test_result, ignore_index=True)
             
             df_= append_data_to_df(test_result,df_)
 
@@ -251,11 +249,10 @@ for tfidf in list_of_vectoresed_word:
             
             
             print('model: ', model)
-            print(' acc: ',  acc, ' precision: ', results[0], ' recall: ', results[1], ' fscore: ', results[2])
+            print(' acc: ',  acc, ' precision: ', precision, ' recall: ', recall, ' fscore: ', fscore)
             
 
-    print(df)
     
 if save:
-    df.to_csv('Result.csv', index=False)
-    dftesting.to_csv('ResultTesting.csv', index=False)
+    df_.to_csv('Result.csv', index=False)
+    #dftesting.to_csv('ResultTesting.csv', index=False)
