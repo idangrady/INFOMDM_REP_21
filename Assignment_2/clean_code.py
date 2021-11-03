@@ -50,6 +50,7 @@ complete_list = []
 true_list = []
 fake_list = []
 df_ = pd.DataFrame(columns = ["Model", "Accuracy","Train Accuracy", "Precision", "Recall", "F1 Score","Folds","type","Best Parameters"])
+dftesting_ = pd.DataFrame(columns = ["Model", "Accuracy","Precision", "Recall", "F1 Score","Best Parameters"])
 
 def get_data(path):
     filelist = []
@@ -150,7 +151,7 @@ def train_folds(classifier ,data_concat,  fold, type_,n_fold=5, print_plots = Fa
     
     if print_plots:
         plot_importance_features(tuned_params)
-    return (str(classifier)[:-2], statistics.mean(scores),statistics.mean(train_accu), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores),n_fold, type_,tuned_params.best_params_), tuned_params
+    return (str(classifier)[:-2], statistics.mean(scores),statistics.mean(train_accu), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores),n_fold, type_,tuned_params.best_params_), tuned_params, str(classifier)[:-2]
 
 
 
@@ -223,7 +224,7 @@ for tfidf in list_of_vectoresed_word:
         for model in [ MultinomialNB(), LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier()]:
 
             # (Accuracy, Precision, Recall, F-score)
-            result, model =  train_folds(model, data_training, KFold,type_, k,print_plots = False)
+            result, model, name =  train_folds(model, data_training, KFold,type_, k,print_plots = False)
             df= append_data_to_df(result,df_)
     
             x_testing = data_testing[:, 1:]
@@ -232,8 +233,14 @@ for tfidf in list_of_vectoresed_word:
             
             acc = model.score(x_testing, y_testing)
             results = precision_recall_fscore_support(y_testing, y_testing_pred, average = 'macro')
+           
+            test_result = {"Model": name, "Accuracy": acc, "Precision": results[0], "Recall": results[1], "F1 Score": results[2], "Best Parameters":model.best_params_}
+            dftesting_.append(test_result, ignore_index=True)
+            
             print('model: ', model)
             print(' acc: ',  acc, ' precision: ', results[0], ' recall: ', results[1], ' fscore: ', results[2])
+            
+            
     print(df)
     
 if save:
