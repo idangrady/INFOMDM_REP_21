@@ -111,7 +111,7 @@ def model_cv(model):
     elif name_model =="LogisticRegression":
         return( name_model, {'penalty': ['l1', 'l2'], 'C': [0.01, 0.1, 0.25, 0.5, 1, 2.5, 10]})
     else:
-        return (name_model, {'n_estimators': [10, 50, 100,500,1000], 'max_depth': [None, 2, 4, 8,16,30], 'min_samples_split': [2, 4, 8,16,30]}) # add for the real analysis also 500 and 1000
+        return (name_model, {'n_estimators': [10, 50, 100], 'max_depth': [None, 2, 4, 8,16,30], 'min_samples_split': [2, 4, 8,16,30,40]}) # add for the real analysis also 500 and 1000
     
 
 # =============================================================================
@@ -129,7 +129,7 @@ def train_folds(classifier ,data_concat,  fold, type_,n_fold=5, print_plots = Fa
     recalls = []
     fscores = []
     
-    x_train, x_test, y_train, y_test = train_test_split(data_concat[:,1:], data_concat[:,0], test_size=0.8, random_state= 6)
+    x_train, x_test, y_train, y_test = train_test_split(data_concat[:,1:], data_concat[:,0], test_size=0.8, random_state= 40)
     
     name, params = model_cv(classifier)
     if name.lower() == "logisticregression":
