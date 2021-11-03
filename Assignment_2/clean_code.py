@@ -49,7 +49,7 @@ reviews = {}
 complete_list = []
 true_list = []
 fake_list = []
-df_ = pd.DataFrame(columns = ["Model", "Accuracy", "Precision", "Recall", "F1 Score","Folds","type","Best Parameters"])
+df_ = pd.DataFrame(columns = ["Model", "Accuracy","Train Accuracy", "Precision", "Recall", "F1 Score","Folds","type","Best Parameters"])
 
 def get_data(path):
     filelist = []
@@ -125,6 +125,7 @@ def append_data_to_df(data, df):
 def train_folds(classifier ,data_concat,  fold, type_,n_fold=5, print_plots = False):
 
     scores= []
+    train_accu = []
     precisions = []
     recalls = []
     fscores = []
@@ -142,13 +143,14 @@ def train_folds(classifier ,data_concat,  fold, type_,n_fold=5, print_plots = Fa
     precision, recall, fscore, _ = precision_recall_fscore_support(y_test, y_pred, average = 'macro')
   
     scores.append(tuned_params.score(x_test, y_test))
+    train_accu.append(tuned_params.score(x_train, y_train))
     precisions.append(precision)
     recalls.append(recall)
     fscores.append(fscore)
     
     if print_plots:
         plot_importance_features(tuned_params)
-    return (str(classifier)[:-2], statistics.mean(scores), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores),n_fold, type_,tuned_params.best_params_)
+    return (str(classifier)[:-2], statistics.mean(scores),statistics.mean(train_accu), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores),n_fold, type_,tuned_params.best_params_)
 
 
 
@@ -189,9 +191,9 @@ b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 
 save=True
 idx = 0
-list_of_vectoresed_word = [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_vectorizer)]
+list_of_vectoresed_word = [single_tfidf, b_gram_tfidf ] #C_tvectorizer bigram_vectorizer
 
-for tfidf, vectorizer  in list_of_vectoresed_word:
+for tfidf in list_of_vectoresed_word:
     type_ = "Unigram"
     if (idx-(len(list_of_vectoresed_word)/2)>=0):
         type_ ="Bigram"
@@ -213,5 +215,5 @@ for tfidf, vectorizer  in list_of_vectoresed_word:
     
     print(df)
     
-if save:
+if False:
     df.to_csv('Result.csv', index=False)
