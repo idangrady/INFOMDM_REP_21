@@ -193,13 +193,14 @@ single_tfidf = transformer.fit_transform(vectorized_data).toarray()
 b_gram_transformer = TfidfTransformer( smooth_idf=False)
 b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 
+print_features=False
 save=False
 idx = 0
-list_of_vectoresed_word = [single_tfidf, b_gram_tfidf ] #C_tvectorizer bigram_vectorizer
+list_of_vectoresed_word = [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_vectorizer) ] #C_tvectorizer bigram_vectorizer
 
 
 
-for tfidf in list_of_vectoresed_word:
+for tfidf, vectorizer in list_of_vectoresed_word:
     type_ = "Unigram"
     if (idx-(len(list_of_vectoresed_word)/2)>=0):
         type_ ="Bigram"
@@ -219,9 +220,9 @@ for tfidf in list_of_vectoresed_word:
     data_testing = np.array(data_split_testing)
     data_testing = data_testing.astype('float32')
     
-    
-    
-    
+
+
+
     x_train, x_test, y_train, y_test = train_test_split(data_training[:,1:], data_training[:,0], test_size=0.8, random_state= 40)
     
     for k in [5,10]:
@@ -250,9 +251,40 @@ for tfidf in list_of_vectoresed_word:
             
             print('model: ', model)
             print(' acc: ',  acc, ' precision: ', precision, ' recall: ', recall, ' fscore: ', fscore)
-            
-
     
+
+    #region Top 5 features
+    
+    full_data = np.array(concat_df).astype('float32')
+
+    vocabulary_mapping = vectorizer.vocabulary_ 
+    reverse_vocabulary_mapping = {}
+    for k, v in vocabulary_mapping.items():
+        reverse_vocabulary_mapping[v] = k
+
+    top_N = 5
+    
+    def subtract_log_probs(array):
+        return array[1] - array[0]
+    
+    model = MultinomialNB()
+    model.fit(full_data[:, 1:], full_data[:, 0])
+
+    feature_log_probabilities = model.feature_log_prob_
+    probabilities = subtract_log_probs(feature_log_probabilities)
+
+    max_indices = (-probabilities).argsort()[:top_N]
+    min_indices = probabilities.argsort()[:top_N]
+
+    if print_features:
+        for i in range(0, top_N):
+            print("Feature: " + reverse_vocabulary_mapping[min_indices[i]] + ", Score: " + str(probabilities[min_indices[i]]))
+        for i in range(0, top_N):
+            print("Feature: " + reverse_vocabulary_mapping[max_indices[i]] + ", Score: " + str(probabilities[max_indices[i]]))
+        
+    #endregion
+
+
 if save:
     df_.to_csv('Result_combined_uni_Bi.csv', index=False)
     #dftesting.to_csv('ResultTesting.csv', index=False)
