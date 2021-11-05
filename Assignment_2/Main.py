@@ -152,7 +152,26 @@ def train_folds(classifier ,x_train, x_test, y_train, y_test,  fold, type_,n_fol
         plot_importance_features(tuned_params)
     return (str(classifier)[:-2], statistics.mean(scores),statistics.mean(train_accu), statistics.mean(precisions), statistics.mean(recalls), statistics.mean(fscores),n_fold, type_,tuned_params.best_params_), tuned_params, str(classifier)[:-2]
 
-
+def ncnemars_test(y,model_1,model_2):
+    
+    output_matrix = np.zeros((2,2)) #creating the output matrix
+    
+    #check when model are inacuurate and place it in the right loc in the matrix
+    output_matrix[1][0] = np.sum(np.where(((y+model_1 >1) | (y+model_1 == 0) ) & (y+model_2 ==1),1,0))  #model 1 TN or TP, modele 2 FN or FP
+    output_matrix[0][1] = np.sum(np.where(((y+model_2 >1) | (y+model_2 == 0) ) & (y+model_1 ==1),1,0))  #model 2 TN or TP, modele 1 FN or FP
+    
+    #check when model are are the same in both ==> their correct output and mistakes
+    output_matrix[0][0] = np.sum(np.where((y+model_2 ==1) & (y+model_1 ==1),1,0)) #both models incorrect (FN or FP)
+    output_matrix[1][1] =np.sum(np.where(y+ model_1+model_2>2 ,1,0))  + (np.sum(np.where(y+ model_1+model_2==0 ,1,0))) #both models correct (TP or TN)
+    
+    #check if we can divide
+    if (output_matrix[1][0] - output_matrix[0][1] != 0):
+        p_value = ((abs(output_matrix[1][0]) - (output_matrix[0][1]))-1)**2 / (output_matrix[1][0] + output_matrix[0][1])
+    # if not
+    else:
+        p_value  ="can not divided by 0"
+        
+    return(output_matrix,p_value)
 
 
 get_data('Data/negative_polarity')
@@ -198,8 +217,9 @@ save=False
 idx = 0
 list_of_vectoresed_word = [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_vectorizer) ] #C_tvectorizer bigram_vectorizer
 
-
-
+best_models ={}
+model_names = [ "MultinomialNB", "LogisticRegression", "DecisionTreeClassifier", "RandomForestClassifier"]
+y_nm =0
 for tfidf, vectorizer in list_of_vectoresed_word:
     type_ = "Unigram"
     if (idx-(len(list_of_vectoresed_word)/2)>=0):
@@ -230,7 +250,8 @@ for tfidf, vectorizer in list_of_vectoresed_word:
 
             # (Accuracy, Precision, Recall, F-score)
             result, model, name =  train_folds(model, x_train, x_test, y_train, y_test, KFold,type_, k,print_plots = False)
-    
+            
+            
             x_testing = data_testing[:, 1:]
             y_testing = data_testing[:,0]
             y_testing_pred = model.predict(x_testing)
@@ -245,9 +266,15 @@ for tfidf, vectorizer in list_of_vectoresed_word:
 
             
             df_= append_data_to_df(test_result,df_)
-
             
-            
+            if (k==10 and type_=="Bigram"):
+                if name in best_models:
+                    if best_models[name][1] < acc:
+                        best_models[name] =[model, acc, y_testing_pred]
+                else:
+                    best_models[name] =[model, acc, y_testing_pred]
+                    y_nm =y_testing
+                
             
             print('model: ', model)
             print(' acc: ',  acc, ' precision: ', precision, ' recall: ', recall, ' fscore: ', fscore)
@@ -257,34 +284,57 @@ for tfidf, vectorizer in list_of_vectoresed_word:
     
     full_data = np.array(concat_df).astype('float32')
 
-    vocabulary_mapping = vectorizer.vocabulary_ 
-    reverse_vocabulary_mapping = {}
-    for k, v in vocabulary_mapping.items():
-        reverse_vocabulary_mapping[v] = k
-
-    top_N = 5
-    
-    def subtract_log_probs(array):
-        return array[1] - array[0]
-    
-    model = MultinomialNB()
-    model.fit(full_data[:, 1:], full_data[:, 0])
-
-    feature_log_probabilities = model.feature_log_prob_
-    probabilities = subtract_log_probs(feature_log_probabilities)
-
-    max_indices = (-probabilities).argsort()[:top_N]
-    min_indices = probabilities.argsort()[:top_N]
-
-    if print_features:
-        for i in range(0, top_N):
-            print("Feature: " + reverse_vocabulary_mapping[min_indices[i]] + ", Score: " + str(probabilities[min_indices[i]]))
-        for i in range(0, top_N):
-            print("Feature: " + reverse_vocabulary_mapping[max_indices[i]] + ", Score: " + str(probabilities[max_indices[i]]))
-        
+# =============================================================================
+#     vocabulary_mapping = vectorizer.vocabulary_ 
+#     reverse_vocabulary_mapping = {}
+#     for k, v in vocabulary_mapping.items():
+#         reverse_vocabulary_mapping[v] = k
+# 
+#     top_N = 5
+#     
+#     def subtract_log_probs(array):
+#         return array[1] - array[0]
+#     
+#     model = MultinomialNB()
+#     model.fit(full_data[:, 1:], full_data[:, 0])
+# 
+#     feature_log_probabilities = model.feature_log_prob_
+#     probabilities = subtract_log_probs(feature_log_probabilities)
+# 
+#     max_indices = (-probabilities).argsort()[:top_N]
+#     min_indices = probabilities.argsort()[:top_N]
+# 
+#     if print_features:
+#         for i in range(0, top_N):
+#             print("Feature: " + reverse_vocabulary_mapping[min_indices[i]] + ", Score: " + str(probabilities[min_indices[i]]))
+#         for i in range(0, top_N):
+#             print("Feature: " + reverse_vocabulary_mapping[max_indices[i]] + ", Score: " + str(probabilities[max_indices[i]]))
+#         
+# =============================================================================
     #endregion
 
+significant = []
+# compute the significant
+for model1 in model_names:
+    for model2 in model_names:
+        if str(model1) ==str(model2):
+            continue
+        else:
+            #get the list
+            model_1_list = best_models[model1]
+            model_2_list = best_models[model2]
+            
+            model_1_model, model_1_acc,model_1_pred = model_1_list
+            model_2_model, model_2_acc,model_2_pred = model_2_list
+            
+            
+            _, _p_val = ncnemars_test(y_nm, model_1_pred,model_2_pred )
+            significant.append((model1,model2,_p_val))
+            
 
+print(significant)
 if save:
     df_.to_csv('Result_combined_uni_Bi.csv', index=False)
     #dftesting.to_csv('ResultTesting.csv', index=False)
+
+significant.to_csv('Result_combined_uni_Bi.csv', index=False)
