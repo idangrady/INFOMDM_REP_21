@@ -27,9 +27,8 @@ def gini_im(arr):
 def impurity(arr):
     if len(arr) == 0:
         return 0
-    else:
-        p = np.sum(arr) / len(arr)
-        return p * (1 - p)
+    p = np.sum(arr) / len(arr)
+    return p * (1 - p)
     
 def check_accuracy(x,y, indx, threshhold):
     output_arr = np.zeros(x.shape)
@@ -41,28 +40,32 @@ def check_accuracy(x,y, indx, threshhold):
 
 def best_split(x,y):
     x_length = len(x)
-    
+
     income_sorted = np.array(np.sort(np.unique(x)))
-    income_splitpoints = (income_sorted[0:len(income_sorted)-1]+income_sorted[1:len(income_sorted)])/2
+    income_splitpoints = (
+        income_sorted[: len(income_sorted) - 1]
+        + income_sorted[1 : len(income_sorted)]
+    ) / 2
+
     best_imp_split = np.inf
     threshhold = 0
     step_si = 1/x_length
-    
+
     for split_idx, split in enumerate(income_splitpoints):
         ff = x[split_idx]
-        
+
         label_1 = y[x<=split]
         lebel_2 = y[x>split]
 
         #calculate impurity
         impurity_l_1 = impurity(label_1)
         impurity_l_2 = impurity(lebel_2)
-        
+
         result_imp = impurity_l_1+impurity_l_2
         if result_imp <best_imp_split:
             best_imp_split=result_imp
             threshhold =split
-            
+
     return best_imp_split,threshhold
             
         

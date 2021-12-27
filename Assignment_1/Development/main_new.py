@@ -46,11 +46,7 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
     if rows_class_0 == 0 or rows_class_1 == 0:
 
         # If node is pure return node as leaf with classification
-        if rows_class_0 >= rows_class_1:
-            tree.class_label = 0
-        else:
-            tree.class_label = 1
-
+        tree.class_label = 0 if rows_class_0 >= rows_class_1 else 1
         return tree
 
 
@@ -61,11 +57,7 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
     if nmin is not None and nrows < nmin:
 
         # With too few rows return node as leaf with classification
-        if rows_class_0 >= rows_class_1:
-            tree.class_label = 0
-        else:
-            tree.class_label = 1
-
+        tree.class_label = 0 if rows_class_0 >= rows_class_1 else 1
         return tree
 
 
@@ -76,7 +68,7 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
     else:
         # When nfeat is given we consider nfeat random columns
         column_numbers = np.random.choice(ncolumns, nfeat, replace = False)
-    
+
     # Find best split over given column numbers
     best_split_info = {'Feature': None, 'Threshold': None, 'Impurity': np.inf}
 
@@ -88,17 +80,13 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
         # If impurity is lower than current best split, use the new split
         if feature_impurity < best_split_info['Impurity']:
             best_split_info = {'Feature': feature, 'Threshold': feature_threshold, 'Impurity': feature_impurity}
-    
+
 
     # Check if a split is found under the given constraints
     if best_split_info['Feature'] is None:
 
         # With no split found return node as leaf with classification
-        if rows_class_0 >= rows_class_1:
-            tree.class_label = 0
-        else:
-            tree.class_label = 1
-
+        tree.class_label = 0 if rows_class_0 >= rows_class_1 else 1
         return tree
 
 
@@ -135,7 +123,7 @@ def tree_pred(x, tr):
 def tree_grow_b(x, y, nmin, minleaf, nfeat, m):
 
     # Draw m bootstrap samples
-    bootstrap_samples = [bootstrap_sample(x,y) for _ in range(0, m)]
+    bootstrap_samples = [bootstrap_sample(x,y) for _ in range(m)]
 
     # Execute the tree_grow procedure on every sample
     return [tree_grow(sample, y_, nmin, minleaf, nfeat) for sample,y_ in bootstrap_samples]
@@ -159,27 +147,27 @@ def best_split(x, y, feature, minleaf):
 
     # Enumerate all possible split points
     sorted_column = np.array(np.sort(np.unique(column)))
-    possible_splitpoints = (sorted_column[0 : -1] + sorted_column[1 :]) / 2
+    possible_splitpoints = (sorted_column[:-1] + sorted_column[1 :]) / 2
 
     # Find the best split point
     best_split_info = {'Threshold': None, 'Impurity': np.inf}
-    
+
     for threshold in possible_splitpoints:
 
         # Split data on threshold
         left_data  = y[column <= threshold]
         right_data = y[column >  threshold]
-        
+
         # Check minleaf constraint
         if minleaf is not None and (len(left_data) < minleaf or len(right_data) < minleaf):
             # When one part has too few rows we do not consider this split point
             continue
-        
+
         # Determine the gini impurity
         left_impurity  = len(left_data)  / length_column * gini_impurity(left_data)
         right_impurity = len(right_data) / length_column * gini_impurity(right_data)
         impurity = left_impurity + right_impurity
-        
+
         # When the impurity is lower then the current best split use the new split
         if impurity < best_split_info['Impurity']: 
             best_split_info = {'Threshold': threshold, 'Impurity': impurity}
@@ -188,17 +176,16 @@ def best_split(x, y, feature, minleaf):
     return (best_split_info['Threshold'], best_split_info['Impurity'])
 
 # Function that returns the Gini impurity
-def gini_impurity(data): 
+def gini_impurity(data):
     """
     we assume all the values are 0 1
     """
-    if len(data) == 0: 
+    if len(data) == 0:
         # Return 0 if the data is empty
         return 0
-    else:
-        # Otherwise return the gini impurity
-        prob = np.sum(data) / len(data)    
-        return prob * (1 - prob) 
+    # Otherwise return the gini impurity
+    prob = np.sum(data) / len(data)
+    return prob * (1 - prob) 
 
 
 # Drawing a bootstrap sample from a dataset
@@ -273,12 +260,10 @@ def get_pima_data():
 def get_train_data(set_,columns):
     if (set_ =='train' ):
         df = pd.read_csv(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\eclipse-metrics-packages-2.0.csv', delimiter = ';')
-        df_ = np.array(df[columns])
-        y = df['post']
     else:
         df =pd.read_csv(r'C:\Users\admin\Documents\GitHub\INFOMDM_REP_21\Assignment_1\eclipse-metrics-packages-3.0.csv', delimiter = ';')
-        df_ = np.array(df[columns])
-        y = df['post']
+    df_ = np.array(df[columns])
+    y = df['post']
     return (df_,y)
 
 

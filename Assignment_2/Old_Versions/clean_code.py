@@ -195,16 +195,12 @@ b_gram_transformer = TfidfTransformer( smooth_idf=False)
 b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 
 save=True
-idx = 0
 list_of_vectoresed_word = [single_tfidf, b_gram_tfidf ] #C_tvectorizer bigram_vectorizer
 
 
 
-for tfidf in list_of_vectoresed_word:
-    type_ = "Unigram"
-    if (idx-(len(list_of_vectoresed_word)/2)>=0):
-        type_ ="Bigram"
-    idx +=1
+for idx, tfidf in enumerate(list_of_vectoresed_word):
+    type_ = "Bigram" if (idx-(len(list_of_vectoresed_word)/2)>=0) else "Unigram"
     df = pd.DataFrame(Labels)
     df_2 = pd.DataFrame(tfidf)
 
@@ -226,23 +222,23 @@ for tfidf in list_of_vectoresed_word:
             # (Accuracy, Precision, Recall, F-score)
             result, model, name =  train_folds(model, data_training, KFold,type_, k,print_plots = False)
             df= append_data_to_df(result,df_)
-    
+
             x_testing = data_testing[:, 1:]
             y_testing = data_testing[:,0]
             y_testing_pred = model.predict(x_testing)
-            
+
             acc = model.score(x_testing, y_testing)
             results = precision_recall_fscore_support(y_testing, y_testing_pred, average = 'macro')
-           
+
             test_result = {"Model": name, "Accuracy": acc, "Precision": results[0], "Recall": results[1], "F1 Score": results[2], "Best Parameters":model.best_params_}
             dftesting.append(test_result, ignore_index=True)
-            
+
             print('model: ', model)
             print(' acc: ',  acc, ' precision: ', results[0], ' recall: ', results[1], ' fscore: ', results[2])
-            
+
 
     print(df)
-    
+
 if save:
     df.to_csv('Result.csv', index=False)
     dftesting.to_csv('ResultTesting.csv', index=False)

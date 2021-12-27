@@ -29,11 +29,7 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
     if rows_class_0 == 0 or rows_class_1 == 0:
 
         # If node is pure return node as leaf with the correct classification
-        if rows_class_0 >= rows_class_1:
-            tree.class_label = 0
-        else:
-            tree.class_label = 1
-
+        tree.class_label = 0 if rows_class_0 >= rows_class_1 else 1
         return tree
 
     # Get amount of rows and columns
@@ -43,11 +39,7 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
     if nmin is not None and nrows < nmin:
 
         # With too few rows return node as leaf with the correct classification
-        if rows_class_0 >= rows_class_1:
-            tree.class_label = 0
-        else:
-            tree.class_label = 1
-
+        tree.class_label = 0 if rows_class_0 >= rows_class_1 else 1
         return tree
 
     # Determine columns to be considered for splitting
@@ -57,7 +49,7 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
     else:
         # When nfeat is given we consider nfeat random columns
         column_numbers = np.random.choice(ncolumns, nfeat, replace = False)
-    
+
     # Initialize information about the best split
     best_split_info = {'Feature': None, 'Threshold': None, 'Impurity': np.inf}
 
@@ -70,17 +62,13 @@ def tree_grow(x, y, nmin, minleaf, nfeat):
         # If the found impurity is lower than the impurity of the current best split, we keep this new split
         if feature_impurity < best_split_info['Impurity']:
             best_split_info = {'Feature': feature, 'Threshold': feature_threshold, 'Impurity': feature_impurity}
-    
+
 
     # Check if a split is found under the given constraints
     if best_split_info['Feature'] is None:
 
         # When no split is found return node as leaf with the correct classification
-        if rows_class_0 >= rows_class_1:
-            tree.class_label = 0
-        else:
-            tree.class_label = 1
-
+        tree.class_label = 0 if rows_class_0 >= rows_class_1 else 1
         return tree
 
     # Retrieve information about the best split
@@ -135,7 +123,7 @@ def tree_grow_b(x, y, nmin, minleaf, nfeat, m):
     """
 
     # Draw m bootstrap samples
-    bootstrap_samples = [bootstrap_sample(x, y) for _ in range(0, m)]
+    bootstrap_samples = [bootstrap_sample(x, y) for _ in range(m)]
 
     # Execute the tree_grow procedure on every sample
     return [tree_grow(sample, y_, nmin, minleaf, nfeat) for sample,y_ in bootstrap_samples]
@@ -152,13 +140,11 @@ def tree_pred_b(x, tr_list):
         np.array(1-D) (0/1 data):    A vector which contains the class label prediction for each data entry 
     """
 
-    predict_ = 0
-    for entry in tr_list:
-        
-        predict_ +=   np.array([float(i) for i in tree_pred(x,entry)])
-        
-    
-    predict_ = predict_/len(tr_list)
+    predict_ = sum(
+        np.array([float(i) for i in tree_pred(x, entry)]) for entry in tr_list
+    )
+
+    predict_ /= len(tr_list)
     predict_ = np.where(predict_>=0.5,1,0)
     return(predict_)
 
@@ -182,27 +168,27 @@ def best_split(x, y, feature, minleaf):
 
     # Enumerate all possible split points
     sorted_column = np.array(np.sort(np.unique(column)))
-    possible_splitpoints = (sorted_column[0 : -1] + sorted_column[1 :]) / 2
+    possible_splitpoints = (sorted_column[:-1] + sorted_column[1 :]) / 2
 
     # Find the best split point
     best_split_info = {'Threshold': None, 'Impurity': np.inf}
-    
+
     for threshold in possible_splitpoints:
 
         # Split the class labels on the threshold value
         left_data  = y[column <= threshold]
         right_data = y[column >  threshold]
-        
+
         # Check minleaf constraint
         if minleaf is not None and (len(left_data) < minleaf or len(right_data) < minleaf):
             # When one part has too few rows we do not consider this split point
             continue
-        
+
         # Determine the gini impurity of this split
         left_impurity  = len(left_data)  / length_column * gini_impurity(left_data)
         right_impurity = len(right_data) / length_column * gini_impurity(right_data)
         split_impurity = left_impurity + right_impurity
-        
+
         # When the impurity is lower then the current best split we use this new split
         if split_impurity < best_split_info['Impurity']: 
             best_split_info = {'Threshold': threshold, 'Impurity': split_impurity}
@@ -211,7 +197,7 @@ def best_split(x, y, feature, minleaf):
     return (best_split_info['Threshold'], best_split_info['Impurity'])
 
 
-def gini_impurity(labels): 
+def gini_impurity(labels):
     """Determines the gini impurity of the given class labels
     
     Params:
@@ -221,16 +207,12 @@ def gini_impurity(labels):
         float:    The gini impurity of the data
     """
 
-    # Check if we have any data
-    if len(labels) == 0: 
+    if len(labels) == 0:
         # Return 0 if the data is empty
         return 0
 
-    # Otherwise we return the gini impurity of the data
-    else:
-
-        prob = np.sum(labels) / len(labels)    
-        return prob * (1 - prob) 
+    prob = np.sum(labels) / len(labels)
+    return prob * (1 - prob) 
 
 
 def tree_pred_entry(x_entry, tr):
