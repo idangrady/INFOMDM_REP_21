@@ -214,17 +214,13 @@ b_gram_tfidf = b_gram_transformer.fit_transform(b_gram).toarray()
 
 print_features=False
 save=False
-idx = 0
 list_of_vectoresed_word = [(single_tfidf, C_tvectorizer), (b_gram_tfidf, bigram_vectorizer) ] #C_tvectorizer bigram_vectorizer
 
 best_models ={}
 model_names = [ "MultinomialNB", "LogisticRegression", "DecisionTreeClassifier", "RandomForestClassifier"]
 y_nm =0
-for tfidf, vectorizer in list_of_vectoresed_word:
-    type_ = "Unigram"
-    if (idx-(len(list_of_vectoresed_word)/2)>=0):
-        type_ ="Bigram"
-    idx +=1
+for idx, (tfidf, vectorizer) in enumerate(list_of_vectoresed_word):
+    type_ = "Bigram" if (idx-(len(list_of_vectoresed_word)/2)>=0) else "Unigram"
     df = pd.DataFrame(Labels)
     df_2 = pd.DataFrame(tfidf)
 
@@ -239,34 +235,34 @@ for tfidf, vectorizer in list_of_vectoresed_word:
     data_training = data_training.astype('float32')
     data_testing = np.array(data_split_testing)
     data_testing = data_testing.astype('float32')
-    
+
 
 
 
     x_train, x_test, y_train, y_test = train_test_split(data_training[:,1:], data_training[:,0], test_size=0.8, random_state= 40)
-    
+
     for k in [5,10]:
         for model in [ MultinomialNB(), LogisticRegression(), DecisionTreeClassifier(), RandomForestClassifier()]:
 
             # (Accuracy, Precision, Recall, F-score)
             result, model, name =  train_folds(model, x_train, x_test, y_train, y_test, KFold,type_, k,print_plots = False)
-            
-            
+
+
             x_testing = data_testing[:, 1:]
             y_testing = data_testing[:,0]
             y_testing_pred = model.predict(x_testing)
-            
+
             acc = model.score(x_testing, y_testing)
             train_score = model.score(data_training[:,1:], data_training[:,0])
             precision, recall, fscore, _ = precision_recall_fscore_support(y_testing, y_testing_pred, average = 'macro')
 
 
-            
+
             test_result = (name,train_score, acc,  precision,  recall, fscore,k,type_, model.best_params_)
 
-            
+
             df_= append_data_to_df(test_result,df_)
-            
+
             if (k==10 and type_=="Bigram"):
                 if name in best_models:
                     if best_models[name][1] < acc:
@@ -274,44 +270,15 @@ for tfidf, vectorizer in list_of_vectoresed_word:
                 else:
                     best_models[name] =[model, acc, y_testing_pred]
                     y_nm =y_testing
-                
-            
+
+
             print('model: ', model)
             print(' acc: ',  acc, ' precision: ', precision, ' recall: ', recall, ' fscore: ', fscore)
-    
+
 
     #region Top 5 features
-    
-    full_data = np.array(concat_df).astype('float32')
 
-# =============================================================================
-#     vocabulary_mapping = vectorizer.vocabulary_ 
-#     reverse_vocabulary_mapping = {}
-#     for k, v in vocabulary_mapping.items():
-#         reverse_vocabulary_mapping[v] = k
-# 
-#     top_N = 5
-#     
-#     def subtract_log_probs(array):
-#         return array[1] - array[0]
-#     
-#     model = MultinomialNB()
-#     model.fit(full_data[:, 1:], full_data[:, 0])
-# 
-#     feature_log_probabilities = model.feature_log_prob_
-#     probabilities = subtract_log_probs(feature_log_probabilities)
-# 
-#     max_indices = (-probabilities).argsort()[:top_N]
-#     min_indices = probabilities.argsort()[:top_N]
-# 
-#     if print_features:
-#         for i in range(0, top_N):
-#             print("Feature: " + reverse_vocabulary_mapping[min_indices[i]] + ", Score: " + str(probabilities[min_indices[i]]))
-#         for i in range(0, top_N):
-#             print("Feature: " + reverse_vocabulary_mapping[max_indices[i]] + ", Score: " + str(probabilities[max_indices[i]]))
-#         
-# =============================================================================
-    #endregion
+    full_data = np.array(concat_df).astype('float32')
 
 significant = []
 # compute the significant
@@ -319,18 +286,17 @@ for model1 in model_names:
     for model2 in model_names:
         if str(model1) ==str(model2):
             continue
-        else:
-            #get the list
-            model_1_list = best_models[model1]
-            model_2_list = best_models[model2]
-            
-            model_1_model, model_1_acc,model_1_pred = model_1_list
-            model_2_model, model_2_acc,model_2_pred = model_2_list
-            
-            
-            _, _p_val = ncnemars_test(y_nm, model_1_pred,model_2_pred )
-            significant.append((model1,model2,_p_val))
-            
+        #get the list
+        model_1_list = best_models[model1]
+        model_2_list = best_models[model2]
+
+        model_1_model, model_1_acc,model_1_pred = model_1_list
+        model_2_model, model_2_acc,model_2_pred = model_2_list
+
+
+        _, _p_val = ncnemars_test(y_nm, model_1_pred,model_2_pred )
+        significant.append((model1,model2,_p_val))
+
 
 print(significant)
 if save:
